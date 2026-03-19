@@ -21,6 +21,8 @@
 
 ---
 
+<img width="1912" height="956" alt="DL-Hub主页面" src="https://github.com/user-attachments/assets/6ad7393d-c2e4-4094-82ae-5b270645d1b1" />
+
 ## Overview
 
 DL-Hub is a full-stack deep learning platform that manages **six production-ready computer vision tasks** through a unified web interface. Each task provides a complete pipeline — from data preparation and model training to format conversion and deployment packaging — with no command-line required.
