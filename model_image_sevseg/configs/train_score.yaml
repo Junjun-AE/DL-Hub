@@ -1,0 +1,45 @@
+# ============================================================
+# SevSeg-YOLO Training Configuration (Optimized v0.5)
+# ============================================================
+# Usage: yolo detect train cfg=configs/train_score.yaml
+# Best config confirmed by Round 2-5 experiments.
+
+# --- Model ---
+task: score_detect
+model: yolo26n-score.yaml        # Options: yolo26{n,s,m,l,x}-score.yaml (scale letter required!)
+data: path/to/your-dataset.yaml   # Must have 6-column labels with score annotations
+pretrained: yolo26n.pt            # YOLO26 pretrained weights (score_head starts random)
+
+# --- Training ---
+epochs: 105
+imgsz: 640
+batch: 16
+optimizer: SGD
+lr0: 0.01
+lrf: 0.01
+momentum: 0.937
+weight_decay: 0.0005
+warmup_epochs: 3.0
+warmup_momentum: 0.8
+warmup_bias_lr: 0.1
+
+# --- Augmentation ---
+mosaic: 1.0
+mixup: 0.0            # FORCED OFF: MixUp destroys score semantics
+copy_paste: 0.0
+hsv_h: 0.015
+hsv_s: 0.7
+hsv_v: 0.4
+degrees: 0.0
+translate: 0.1
+scale: 0.5
+shear: 0.0
+flipud: 0.0
+fliplr: 0.5
+
+# --- Score Configuration (confirmed optimal by Round 4/5) ---
+score:
+  enabled: true
+  range: [0.0, 10.0]
+  lambda_score: 0.05          # Score loss weight
+  gaussian_sigma: 0.1         # Gaussian NLL standard deviation (core hyperparameter)

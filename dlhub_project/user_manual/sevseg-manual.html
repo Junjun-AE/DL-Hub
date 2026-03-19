@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业缺陷检测(SevSeg-YOLO) - 完整使用手册 | DL-Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-green-dim: rgba(16, 185, 129, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.1);
+            --accent-purple: #8b5cf6;
+            --accent-purple-dim: rgba(139, 92, 246, 0.1);
+            --accent-orange: #f59e0b;
+            --accent-orange-dim: rgba(245, 158, 11, 0.1);
+            --accent-red: #ef4444;
+            --accent-red-dim: rgba(239, 68, 68, 0.1);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-dim: rgba(6, 182, 212, 0.1);
+            --accent-teal: #14b8a6;
+            --accent-teal-dim: rgba(20, 184, 166, 0.1);
+            --accent-pink: #ec4899;
+            --accent-pink-dim: rgba(236, 72, 153, 0.1);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #1a1f2e;
+            --sidebar-width: 300px;
+            --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; font-size: 16px; }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .sidebar-logo-text h1 { font-size: 17px; font-weight: 700; }
+        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
+        
+        .nav-section { margin-bottom: 6px; }
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+        .nav-link.active { background: var(--accent-cyan-dim); color: var(--accent-cyan); border-left-color: var(--accent-cyan); }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Hero区域 */
+        .hero {
+            background: linear-gradient(135deg, rgba(6,182,212,0.15) 0%, rgba(20,184,166,0.12) 50%, rgba(59,130,246,0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 70px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '🔬';
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            opacity: 0.08;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-cyan-dim);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 700px; line-height: 1.7; }
+        .hero-meta { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+        .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 内容区 */
+        .content {
+            max-width: 1400px;
+            padding: 60px 80px;
+            margin: 0 auto;
+        }
+        
+        /* 章节样式 */
+        .section { margin-bottom: 70px; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .section-icon.green { background: var(--accent-green-dim); }
+        .section-icon.blue { background: var(--accent-blue-dim); }
+        .section-icon.purple { background: var(--accent-purple-dim); }
+        .section-icon.orange { background: var(--accent-orange-dim); }
+        .section-icon.cyan { background: var(--accent-cyan-dim); }
+        .section-icon.teal { background: var(--accent-teal-dim); }
+        .section-icon.pink { background: var(--accent-pink-dim); }
+        .section-icon.red { background: var(--accent-red-dim); }
+        
+        .section h2 { font-size: 30px; font-weight: 700; }
+        .section h3 { font-size: 22px; font-weight: 600; margin: 40px 0 18px; color: var(--text-primary); }
+        .section h4 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--text-primary); }
+        .section p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.9; }
+        .section ul, .section ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
+        .section li { margin-bottom: 10px; line-height: 1.8; }
+        .section strong { color: var(--text-primary); }
+        
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .card h4 { font-size: 17px; font-weight: 600; margin: 0; }
+        
+        /* 特性网格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 12px 40px rgba(6, 182, 212, 0.1);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+        .feature-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.7; }
+        
+        /* 算法流程图 */
+        .algorithm-flow {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+        }
+        .flow-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--accent-cyan);
+        }
+        .flow-steps {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+        .flow-step:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        .flow-step-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .flow-step-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .flow-step-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--accent-cyan);
+            font-size: 20px;
+        }
+        
+        /* 原理说明卡片 */
+        .principle-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(6,182,212,0.05) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 16px;
+            padding: 28px;
+            margin: 24px 0;
+        }
+        .principle-card h4 {
+            color: var(--accent-cyan);
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .principle-card p {
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 12px;
+        }
+        .principle-card ul {
+            color: var(--text-secondary);
+            padding-left: 20px;
+        }
+        .principle-card li {
+            margin-bottom: 8px;
+        }
+        
+        /* 公式块 */
+        .formula-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--accent-cyan);
+            text-align: center;
+            overflow-x: auto;
+        }
+        .formula-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-family: var(--font-sans);
+        }
+        
+        /* 对比图 */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .comparison-card.good {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .comparison-card.bad {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .comparison-card h5 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .comparison-card.good h5 { color: var(--accent-green); }
+        .comparison-card.bad h5 { color: var(--accent-red); }
+        
+        /* 模型卡片 */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .model-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+        .model-card.recommended {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+        }
+        .model-card.recommended::before {
+            content: '⭐ 推荐';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .model-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--accent-cyan); }
+        .model-stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+        .model-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .model-stat-value { color: var(--text-primary); font-weight: 600; }
+        .model-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        td { color: var(--text-secondary); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:last-child td { border-bottom: none; }
+        
+        /* 代码块 */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-lang {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .code-copy {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-copy:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        pre {
+            padding: 18px;
+            overflow-x: auto;
+            margin: 0;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        :not(pre) > code {
+            background: var(--code-bg);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: var(--accent-cyan);
+        }
+        
+        /* 提示框 */
+        .tip-box {
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .tip-box.info {
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .tip-box.success {
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .tip-box.warning {
+            background: var(--accent-orange-dim);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .tip-box.danger {
+            background: var(--accent-red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .tip-box.cyan {
+            background: var(--accent-cyan-dim);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .tip-content { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .tip-content strong { color: var(--text-primary); }
+        
+        /* 步骤指引 */
+        .steps { margin: 24px 0; }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 48px;
+            bottom: -8px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-cyan) 0%, transparent 100%);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+            color: white;
+        }
+        .step-content { flex: 1; padding-top: 6px; }
+        .step-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+        .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        
+        /* 文件树 */
+        .file-tree {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.9;
+            margin: 20px 0;
+        }
+        .file-tree .folder { color: var(--accent-cyan); }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); font-style: italic; }
+        
+        /* 架构图 */
+        .architecture-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .arch-box {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .arch-box.input { background: var(--accent-blue-dim); border: 2px solid var(--accent-blue); color: var(--accent-blue); }
+        .arch-box.process { background: var(--accent-cyan-dim); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .arch-box.output { background: var(--accent-green-dim); border: 2px solid var(--accent-green); color: var(--accent-green); }
+        .arch-arrow { color: var(--text-muted); font-size: 24px; }
+        
+        /* 参数表格样式 */
+        .param-table { width: 100%; }
+        .param-table th:first-child { width: 180px; }
+        .param-table th:nth-child(2) { width: 100px; }
+        .param-table th:nth-child(3) { width: 100px; }
+        .param-default { color: var(--accent-cyan); font-family: var(--font-mono); font-size: 13px; }
+        .param-range { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; }
+        
+        /* 阈值指南 */
+        .threshold-guide {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .threshold-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .threshold-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .threshold-item:nth-child(1) .threshold-value { color: var(--accent-green); }
+        .threshold-item:nth-child(2) .threshold-value { color: var(--accent-blue); }
+        .threshold-item:nth-child(3) .threshold-value { color: var(--accent-orange); }
+        .threshold-item:nth-child(4) .threshold-value { color: var(--accent-red); }
+        .threshold-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .threshold-desc { font-size: 11px; color: var(--text-muted); }
+        
+        /* FAQ样式 */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 18px 22px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .faq-question:hover { background: rgba(255,255,255,0.02); }
+        .faq-question::before { content: '❓'; font-size: 18px; }
+        .faq-answer {
+            padding: 0 22px 18px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.8;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: -1px;
+        }
+        
+        /* 场景模板 */
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .scene-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .scene-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        .scene-icon { font-size: 28px; margin-bottom: 10px; }
+        .scene-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .scene-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+        .scene-params {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; }
+            .hero { padding: 40px 24px; }
+            .content { padding: 40px 24px; }
+            .hero h1 { font-size: 36px; }
+            .comparison-grid { grid-template-columns: 1fr; }
+            .threshold-guide { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body>
+
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <a href="#" class="sidebar-logo">
+            <div class="sidebar-logo-icon">🏭</div>
+            <div class="sidebar-logo-text">
+                <h1>SevSeg-YOLO</h1>
+                <span>工业缺陷检测使用手册</span>
+            </div>
+        </a>
+
+        <div class="nav-section">
+            <div class="nav-section-title">基础入门</div>
+            <a href="#overview" class="nav-link active">📋 功能概览</a>
+            <a href="#algorithm" class="nav-link">🧠 算法原理</a>
+            <a href="#architecture" class="nav-link">🏗️ 网络架构</a>
+            <a href="#quickstart" class="nav-link">🚀 快速入门</a>
+            <a href="#installation" class="nav-link">📦 环境配置</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">数据准备</div>
+            <a href="#data-format" class="nav-link">📁 标注格式</a>
+            <a href="#data-convert" class="nav-link">🔄 数据转换</a>
+            <a href="#score-design" class="nav-link">📊 评分标准设计</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型训练</div>
+            <a href="#training" class="nav-link">🎯 训练配置</a>
+            <a href="#score-loss" class="nav-link">📉 评分损失函数</a>
+            <a href="#training-tips" class="nav-link">💡 训练技巧</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">部署与推理</div>
+            <a href="#conversion" class="nav-link">🔄 模型转换</a>
+            <a href="#mask-gen" class="nav-link">🎭 Mask 生成原理</a>
+            <a href="#inference" class="nav-link">🔍 批量推理</a>
+            <a href="#deploy" class="nav-link">🚀 TensorRT 部署</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">参考</div>
+            <a href="#api" class="nav-link">📚 API 参考</a>
+            <a href="#faq" class="nav-link">❓ 常见问题</a>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="content">
+
+            <!-- ==================== 功能概览 ==================== -->
+            <section class="section" id="overview">
+                <div class="section-header">
+                    <div class="section-icon orange">📋</div>
+                    <h2>功能概览</h2>
+                </div>
+
+                <div class="hero">
+                    <div class="hero-badge">DL-Hub · 工业缺陷检测</div>
+                    <h1 class="hero-title" style="font-size:2.2em; background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SevSeg-YOLO</h1>
+                    <p class="hero-subtitle">检测 + 评分 + 分割 三合一工业缺陷检测系统</p>
+                    <div class="hero-meta">
+                        <div class="hero-meta-item"><span>🔍</span> 缺陷定位</div>
+                        <div class="hero-meta-item"><span>📊</span> 严重程度评分 0-10</div>
+                        <div class="hero-meta-item"><span>🎭</span> 零标注近似分割</div>
+                        <div class="hero-meta-item"><span>⚡</span> TensorRT ~6ms</div>
+                    </div>
+                </div>
+
+                <p>SevSeg-YOLO 是 DL-Hub 平台的工业缺陷检测模块。传统方案需要三个独立模型分别完成检测、评分、分割；SevSeg-YOLO 在单次前向传播中同时完成这三个任务，仅需框标注 + severity 评分字段，无需像素级分割标注。</p>
+
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>核心创新</strong>：Score Head 直接集成到 YOLO 检测架构中输出严重程度评分，MaskGenerator 从检测框推导像素级分割结果，实现了「一个模型解决三个问题」的效率突破。
+                    </div>
+                </div>
+
+                <h3>核心特性</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔍</div>
+                        <h4>缺陷检测</h4>
+                        <p>基于 YOLO26-Score 架构，实时检测缺陷位置和类别，支持多类别</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h4>严重程度评分</h4>
+                        <p>为每个缺陷输出 0-10 连续评分，基于 Gaussian NLL 损失函数</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎭</div>
+                        <h4>零标注分割</h4>
+                        <p>MaskGenerator 从 FPN 特征图自动生成缺陷 Mask，无需任何分割标注</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h4>高效部署</h4>
+                        <p>支持 ONNX / TensorRT FP16，.dlhub 一键打包部署</p>
+                    </div>
+                </div>
+
+                <h3>传统方案 vs SevSeg-YOLO</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <tr><th>对比项</th><th>传统方案</th><th>SevSeg-YOLO</th></tr>
+                        <tr><td>模型数量</td><td>3 个独立模型（检测+分类+分割）</td><td><strong>1 个统一模型</strong></td></tr>
+                        <tr><td>标注需求</td><td>框标注 + 类别 + 像素级 Mask</td><td><strong>框标注 + severity 数值</strong></td></tr>
+                        <tr><td>推理速度</td><td>慢（串行三次推理）</td><td><strong>快（单次前向传播）</strong></td></tr>
+                        <tr><td>标注成本</td><td>极高（像素标注耗时）</td><td><strong>低（仅框标注+填数值）</strong></td></tr>
+                        <tr><td>维护成本</td><td>三套模型分别维护</td><td><strong>一套模型统一管理</strong></td></tr>
+                    </table>
+                </div>
+
+                <h3>适用场景</h3>
+                <div class="scene-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px; margin-top:16px;">
+                    <div class="card" style="padding:16px;">
+                        <div style="font-size:2em; margin-bottom:8px;">🔩</div>
+                        <h4 style="margin-bottom:6px;">制造业质检</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">PCB缺陷、焊接质量、表面划痕、零件缺损</p>
+                    </div>
+                    <div class="card" style="padding:16px;">
+                        <div style="font-size:2em; margin-bottom:8px;">🧱</div>
+                        <h4 style="margin-bottom:6px;">材料检测</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">金属表面、布匹瑕疵、玻璃裂纹、木材节疤</p>
+                    </div>
+                    <div class="card" style="padding:16px;">
+                        <div style="font-size:2em; margin-bottom:8px;">🏗️</div>
+                        <h4 style="margin-bottom:6px;">基础设施</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">桥梁裂缝、道路损伤、管道腐蚀、建筑外观</p>
+                    </div>
+                    <div class="card" style="padding:16px;">
+                        <div style="font-size:2em; margin-bottom:8px;">🍎</div>
+                        <h4 style="margin-bottom:6px;">食品安全</h4>
+                        <p style="font-size:13px; color:var(--text-secondary);">包装缺陷、食品外观质量分级、异物检测</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 算法原理 ==================== -->
+            <section class="section" id="algorithm">
+                <div class="section-header">
+                    <div class="section-icon purple">🧠</div>
+                    <h2>算法原理详解</h2>
+                </div>
+
+                <h3>一、问题定义：三合一缺陷分析</h3>
+                <p>工业缺陷检测需要同时回答三个问题：</p>
+                <div class="flow-steps" style="display:flex; gap:12px; flex-wrap:wrap; margin:20px 0;">
+                    <div class="flow-step" style="flex:1; min-width:180px; text-align:center; padding:20px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px;">
+                        <div class="flow-step-icon" style="font-size:2em; margin-bottom:8px;">📍</div>
+                        <div class="flow-step-title" style="font-weight:600; margin-bottom:4px;">在哪里？</div>
+                        <div class="flow-step-desc" style="font-size:13px; color:var(--text-secondary);">缺陷的位置坐标<br>→ 检测（Detection）</div>
+                    </div>
+                    <div style="display:flex; align-items:center; font-size:1.5em; color:var(--text-muted);">→</div>
+                    <div class="flow-step" style="flex:1; min-width:180px; text-align:center; padding:20px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px;">
+                        <div class="flow-step-icon" style="font-size:2em; margin-bottom:8px;">📊</div>
+                        <div class="flow-step-title" style="font-weight:600; margin-bottom:4px;">多严重？</div>
+                        <div class="flow-step-desc" style="font-size:13px; color:var(--text-secondary);">缺陷的严重程度<br>→ 评分（Scoring）</div>
+                    </div>
+                    <div style="display:flex; align-items:center; font-size:1.5em; color:var(--text-muted);">→</div>
+                    <div class="flow-step" style="flex:1; min-width:180px; text-align:center; padding:20px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px;">
+                        <div class="flow-step-icon" style="font-size:2em; margin-bottom:8px;">🎭</div>
+                        <div class="flow-step-title" style="font-weight:600; margin-bottom:4px;">范围多大？</div>
+                        <div class="flow-step-desc" style="font-size:13px; color:var(--text-secondary);">缺陷的精确区域<br>→ 分割（Segmentation）</div>
+                    </div>
+                </div>
+
+                <h3>二、Score Head 评分机制</h3>
+                <p>SevSeg-YOLO 在 YOLO 检测头旁添加了一个并行的轻量级回归分支——<strong>Score Head</strong>，专门预测缺陷的严重程度。</p>
+
+                <div class="architecture-diagram" style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:30px; margin:20px 0;">
+                    <div style="text-align:center; margin-bottom:16px; font-weight:600; color:var(--accent-cyan);">Score Head 内部结构</div>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <div class="arch-box" style="padding:12px 20px; background:var(--accent-blue-dim); border:1px solid var(--accent-blue); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">输入</div>
+                            <div style="font-weight:600;">特征图</div>
+                            <div style="font-size:11px; color:var(--text-muted);">C 通道</div>
+                        </div>
+                        <div class="arch-arrow" style="color:var(--text-muted); font-size:1.5em;">→</div>
+                        <div class="arch-box" style="padding:12px 20px; background:var(--accent-purple-dim); border:1px solid var(--accent-purple); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">降维</div>
+                            <div style="font-weight:600;">Conv 1×1</div>
+                            <div style="font-size:11px; color:var(--text-muted);">C → C/4</div>
+                        </div>
+                        <div class="arch-arrow" style="color:var(--text-muted); font-size:1.5em;">→</div>
+                        <div class="arch-box" style="padding:12px 20px; background:var(--accent-green-dim); border:1px solid var(--accent-green); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">激活</div>
+                            <div style="font-weight:600;">ReLU</div>
+                        </div>
+                        <div class="arch-arrow" style="color:var(--text-muted); font-size:1.5em;">→</div>
+                        <div class="arch-box" style="padding:12px 20px; background:var(--accent-purple-dim); border:1px solid var(--accent-purple); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">回归</div>
+                            <div style="font-weight:600;">Conv 1×1</div>
+                            <div style="font-size:11px; color:var(--text-muted);">C/4 → 1</div>
+                        </div>
+                        <div class="arch-arrow" style="color:var(--text-muted); font-size:1.5em;">→</div>
+                        <div class="arch-box" style="padding:12px 20px; background:var(--accent-orange-dim); border:1px solid var(--accent-orange); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">输出</div>
+                            <div style="font-weight:600;">Sigmoid × 10</div>
+                            <div style="font-size:11px; color:var(--text-muted);">范围 [0, 10]</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Score Head 仅增加了极少的参数量（约 0.1M），不影响检测速度。输出的 severity 值是一个 0-10 的连续浮点数，代表缺陷的严重程度。</p>
+
+                <h3>三、Gaussian NLL 损失函数</h3>
+                <p>评分回归使用<strong>高斯负对数似然损失</strong>（Gaussian Negative Log-Likelihood），而非简单的 MSE。</p>
+
+                <div class="tip-box info">
+                    <div class="tip-icon">🔬</div>
+                    <div class="tip-content">
+                        <strong>为什么不用 MSE？</strong><br>
+                        MSE 假设所有样本的预测不确定性相同。而实际中：严重缺陷（severity 8-10）的边界比轻微缺陷（severity 1-2）更模糊。Gaussian NLL 允许模型同时学习<strong>预测值</strong>和<strong>预测不确定性</strong>。
+                    </div>
+                </div>
+
+                <div class="formula-block" style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:24px; margin:20px 0; text-align:center;">
+                    <div class="formula-label" style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Gaussian NLL Loss 公式</div>
+                    <div style="font-size:1.3em; font-family:var(--font-mono); color:var(--accent-cyan); letter-spacing:1px;">
+                        L = ½ × [ log(σ²) + (y - μ)² / σ² ]
+                    </div>
+                    <div style="margin-top:16px; font-size:13px; color:var(--text-secondary); text-align:left; max-width:500px; margin-left:auto; margin-right:auto;">
+                        <p><strong>μ (mu)</strong> = 模型预测的 severity 值</p>
+                        <p><strong>σ (sigma)</strong> = 不确定性标准差（由 gaussian_sigma 配置，默认 0.10）</p>
+                        <p><strong>y</strong> = 标注的真实 severity 值</p>
+                    </div>
+                </div>
+
+                <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:24px; margin:20px 0;">
+                    <div style="font-weight:600; margin-bottom:12px; color:var(--accent-cyan);">总损失函数组成</div>
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center;">
+                        <div style="padding:12px 18px; background:var(--accent-blue-dim); border:1px solid var(--accent-blue); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">边界框</div>
+                            <div style="font-weight:700; font-size:1.1em;">L<sub>box</sub></div>
+                            <div style="font-size:11px; color:var(--text-muted);">CIoU Loss</div>
+                        </div>
+                        <div style="font-size:1.5em; color:var(--text-muted);">+</div>
+                        <div style="padding:12px 18px; background:var(--accent-green-dim); border:1px solid var(--accent-green); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">分类</div>
+                            <div style="font-weight:700; font-size:1.1em;">L<sub>cls</sub></div>
+                            <div style="font-size:11px; color:var(--text-muted);">BCE Loss</div>
+                        </div>
+                        <div style="font-size:1.5em; color:var(--text-muted);">+</div>
+                        <div style="padding:12px 18px; background:var(--accent-orange-dim); border:1px solid var(--accent-orange); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">评分 (× λ)</div>
+                            <div style="font-weight:700; font-size:1.1em;">λ × L<sub>score</sub></div>
+                            <div style="font-size:11px; color:var(--text-muted);">Gaussian NLL</div>
+                        </div>
+                        <div style="font-size:1.5em; color:var(--text-muted);">=</div>
+                        <div style="padding:12px 18px; background:var(--accent-purple-dim); border:1px solid var(--accent-purple); border-radius:8px; text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted);">最终</div>
+                            <div style="font-weight:700; font-size:1.1em;">L<sub>total</sub></div>
+                        </div>
+                    </div>
+                    <p style="text-align:center; margin-top:12px; font-size:13px; color:var(--text-secondary);">λ (lambda_score) 默认为 0.05，控制评分损失在总损失中的权重</p>
+                </div>
+
+                <h3>四、评分标签生成流程</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">LabelMe 标注</div>
+                            <div class="step-desc">在 LabelMe 中标注缺陷框，description 字段填写 <code>severity=7.5</code>（0-10 浮点数）</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">数据转换</div>
+                            <div class="step-desc">convert.py 解析 JSON，生成 YOLO+Score 格式标签（6列：class cx cy w h severity）</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">高斯热图</div>
+                            <div class="step-desc">训练时，为每个目标生成以检测框中心为均值的二维高斯分布，作为空间评分软标签</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">Score Head 学习</div>
+                            <div class="step-desc">网络通过 Gaussian NLL Loss 学习从图像特征 → severity 评分的映射</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==================== 网络架构 ==================== -->
+            <section class="section" id="architecture">
+                <div class="section-header">
+                    <div class="section-icon blue">🏗️</div>
+                    <h2>网络架构</h2>
+                </div>
+
+                <h3>YOLO26-Score 完整架构</h3>
+                <p>基于 Ultralytics YOLO26 扩展，YOLO26 本身的创新：</p>
+                <ul>
+                    <li><strong>去除 DFL</strong>（Distribution Focal Loss）：简化边界框回归</li>
+                    <li><strong>NMS-Free 端到端推理</strong>：双头架构，默认 one-to-one 头无需后处理</li>
+                    <li><strong>MuSGD 优化器</strong>：借鉴大语言模型的训练技术</li>
+                    <li><strong>ProgLoss + STAL</strong>：小目标检测精度显著提升</li>
+                </ul>
+
+                <div class="architecture-diagram" style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:30px; margin:24px 0;">
+                    <div style="text-align:center; margin-bottom:20px; font-weight:700; font-size:1.1em; color:var(--accent-cyan);">YOLO26-Score 整体架构</div>
+                    
+                    <!-- Input -->
+                    <div style="display:flex; justify-content:center; margin-bottom:16px;">
+                        <div style="padding:10px 32px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:8px; text-align:center;">
+                            <div style="font-weight:600;">📷 输入图像</div>
+                            <div style="font-size:12px; color:var(--text-muted);">640 × 640 × 3 (RGB)</div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; color:var(--text-muted); margin-bottom:12px;">▼</div>
+
+                    <!-- Backbone -->
+                    <div style="border:2px solid var(--accent-blue); border-radius:12px; padding:16px; margin-bottom:16px;">
+                        <div style="font-weight:600; color:var(--accent-blue); margin-bottom:8px;">🦴 Backbone — YOLO26 CSP-DarkNet</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-blue-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">C3</div>
+                                <div style="font-size:11px; color:var(--text-muted);">80×80 浅层特征</div>
+                            </div>
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-blue-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">C4</div>
+                                <div style="font-size:11px; color:var(--text-muted);">40×40 中层特征</div>
+                            </div>
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-blue-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">C5</div>
+                                <div style="font-size:11px; color:var(--text-muted);">20×20 深层特征</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; color:var(--text-muted); margin-bottom:12px;">▼</div>
+
+                    <!-- Neck -->
+                    <div style="border:2px solid var(--accent-purple); border-radius:12px; padding:16px; margin-bottom:16px;">
+                        <div style="font-weight:600; color:var(--accent-purple); margin-bottom:8px;">🔗 Neck — FPN + PAN 多尺度融合</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-purple-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">P3 (大目标)</div>
+                                <div style="font-size:11px; color:var(--text-muted);">80×80</div>
+                            </div>
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-purple-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">P4 (中目标)</div>
+                                <div style="font-size:11px; color:var(--text-muted);">40×40</div>
+                            </div>
+                            <div style="flex:1; min-width:120px; padding:8px; background:var(--accent-purple-dim); border-radius:6px; text-align:center; font-size:13px;">
+                                <div style="font-weight:600;">P5 (小目标)</div>
+                                <div style="font-size:11px; color:var(--text-muted);">20×20</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; color:var(--text-muted); margin-bottom:12px;">▼</div>
+
+                    <!-- Detection Head -->
+                    <div style="border:2px solid var(--accent-green); border-radius:12px; padding:16px; margin-bottom:16px;">
+                        <div style="font-weight:600; color:var(--accent-green); margin-bottom:12px;">🎯 Detection Head (三个并行分支)</div>
+                        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                            <div style="flex:1; min-width:140px; padding:12px; background:var(--accent-blue-dim); border:1px solid var(--accent-blue); border-radius:8px; text-align:center;">
+                                <div style="font-size:1.5em; margin-bottom:4px;">📦</div>
+                                <div style="font-weight:600;">Box Head</div>
+                                <div style="font-size:12px; color:var(--text-muted);">x, y, w, h</div>
+                                <div style="font-size:11px; color:var(--text-muted);">边界框坐标</div>
+                            </div>
+                            <div style="flex:1; min-width:140px; padding:12px; background:var(--accent-green-dim); border:1px solid var(--accent-green); border-radius:8px; text-align:center;">
+                                <div style="font-size:1.5em; margin-bottom:4px;">🏷️</div>
+                                <div style="font-weight:600;">Cls Head</div>
+                                <div style="font-size:12px; color:var(--text-muted);">类别概率</div>
+                                <div style="font-size:11px; color:var(--text-muted);">N 个类别</div>
+                            </div>
+                            <div style="flex:1; min-width:140px; padding:12px; background:var(--accent-orange-dim); border:2px solid var(--accent-orange); border-radius:8px; text-align:center;">
+                                <div style="font-size:1.5em; margin-bottom:4px;">⭐</div>
+                                <div style="font-weight:700; color:var(--accent-orange);">Score Head</div>
+                                <div style="font-size:12px; color:var(--text-muted);">severity 0-10</div>
+                                <div style="font-size:11px; color:var(--accent-orange);">🆕 SevSeg 新增</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:center; color:var(--text-muted); margin-bottom:12px;">▼</div>
+
+                    <!-- MaskGenerator -->
+                    <div style="border:2px dashed var(--accent-cyan); border-radius:12px; padding:16px;">
+                        <div style="font-weight:600; color:var(--accent-cyan); margin-bottom:8px;">🎭 MaskGenerator (后处理，非网络组件)</div>
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; justify-content:center;">
+                            <div style="padding:6px 12px; background:var(--accent-cyan-dim); border-radius:6px; font-size:12px;">特征裁剪</div>
+                            <span style="color:var(--text-muted);">→</span>
+                            <div style="padding:6px 12px; background:var(--accent-cyan-dim); border-radius:6px; font-size:12px;">双峰Top-K</div>
+                            <span style="color:var(--text-muted);">→</span>
+                            <div style="padding:6px 12px; background:var(--accent-cyan-dim); border-radius:6px; font-size:12px;">多尺度融合</div>
+                            <span style="color:var(--text-muted);">→</span>
+                            <div style="padding:6px 12px; background:var(--accent-cyan-dim); border-radius:6px; font-size:12px;">Canny引导上采样</div>
+                            <span style="color:var(--text-muted);">→</span>
+                            <div style="padding:6px 12px; background:var(--accent-cyan-dim); border-radius:6px; font-size:12px;">二值化+形态学</div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; margin-top:16px; color:var(--text-muted); font-size:13px;">
+                        最终输出：检测框 (x,y,w,h) + 类别 + 置信度 + <strong style="color:var(--accent-orange);">severity 评分</strong> + <strong style="color:var(--accent-cyan);">Mask</strong>
+                    </div>
+                </div>
+
+                <h3>模型变体</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <tr><th>模型</th><th>预训练权重</th><th>参数量</th><th>适用场景</th></tr>
+                        <tr><td>YOLO26n-Score</td><td>yolo26n.pt</td><td>~2.5M</td><td>边缘设备、实时检测</td></tr>
+                        <tr><td>YOLO26s-Score</td><td>yolo26s.pt</td><td>~9.5M</td><td>中等精度需求</td></tr>
+                        <tr><td><strong>YOLO26m-Score</strong></td><td>yolo26m.pt</td><td>~19.5M</td><td><strong>推荐：精度与速度平衡</strong></td></tr>
+                        <tr><td>YOLO26l-Score</td><td>yolo26l.pt</td><td>~25M</td><td>高精度要求</td></tr>
+                        <tr><td>YOLO26x-Score</td><td>yolo26x.pt</td><td>~56M</td><td>极致精度，服务器</td></tr>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 后续章节保持简洁版本 -->
+            <section class="section" id="quickstart"><div class="section-header"><div class="section-icon green">🚀</div><h2>快速入门</h2></div>
+                <div class="steps">
+                    <div class="step"><div class="step-number">1</div><div class="step-content"><div class="step-title">创建任务</div><div class="step-desc">DL-Hub 主页 → 工业缺陷检测 → 新建任务 → 选择工作目录和 Conda 环境</div></div></div>
+                    <div class="step"><div class="step-number">2</div><div class="step-content"><div class="step-title">准备数据</div><div class="step-desc">使用 LabelMe 标注缺陷框，在 description 中写 severity=X.X（0-10），组织为 images/ + jsons/</div></div></div>
+                    <div class="step"><div class="step-number">3</div><div class="step-content"><div class="step-title">数据转换</div><div class="step-desc">「数据转换」Tab → 指定图片和JSON路径 → 自动转为 YOLO+Score 格式 + 分割训练/验证集</div></div></div>
+                    <div class="step"><div class="step-number">4</div><div class="step-content"><div class="step-title">开始训练</div><div class="step-desc">「训练」Tab → 选择 YOLO26m-Score → 设 epochs≥100、batch=32 → 点击开始</div></div></div>
+                    <div class="step"><div class="step-number">5</div><div class="step-content"><div class="step-title">模型转换</div><div class="step-desc">「转换」Tab → 导出 ONNX → TensorRT FP16 → 自动打包为 .dlhub</div></div></div>
+                    <div class="step"><div class="step-number">6</div><div class="step-content"><div class="step-title">批量推理</div><div class="step-desc">「推理」Tab → 选择模型 → 输入图片目录 → 查看检测框+评分+Mask 结果</div></div></div>
+                </div>
+            </section>
+
+            <section class="section" id="installation"><div class="section-header"><div class="section-icon purple">📦</div><h2>环境配置</h2></div>
+                <div class="table-wrapper"><table>
+                    <tr><th>项目</th><th>最低要求</th><th>推荐配置</th></tr>
+                    <tr><td>Python</td><td>3.8+</td><td>3.10 - 3.11</td></tr>
+                    <tr><td>PyTorch</td><td>1.8+</td><td>2.0+ (CUDA 12.1)</td></tr>
+                    <tr><td>GPU</td><td>GTX 1060 6GB</td><td>RTX 3060 12GB+</td></tr>
+                    <tr><td>Ultralytics</td><td><strong>≥ 8.4.0</strong></td><td>8.4.21</td></tr>
+                </table></div>
+                <div class="code-block"><div class="code-header">Conda 环境创建</div><pre><code>conda create -n dlhub python=3.10 -y
+conda activate dlhub
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+pip install ultralytics>=8.4.0
+pip install opencv-contrib-python gradio pyyaml</code></pre></div>
+            </section>
+
+            <section class="section" id="data-format"><div class="section-header"><div class="section-icon blue">📁</div><h2>标注格式</h2></div>
+                <p>LabelMe JSON 标注，关键：在 shape 的 <code>description</code> 字段中填写 <code>severity=数值</code>。</p>
+                <div class="tip-box warning"><div class="tip-icon">⚠️</div><div class="tip-content"><strong>severity 评分参考</strong>：0=无缺陷, 1-3=轻微, 4-6=中等, 7-9=严重, 10=极其严重。未填写时默认 5.0。</div></div>
+                <p>转换后标签格式（比标准 YOLO 多一列 severity）：</p>
+                <div class="code-block"><div class="code-header">YOLO+Score 标签格式 (6列)</div><pre><code># class_id  center_x  center_y  width  height  severity
+  0         0.500     0.300     0.120  0.080   7.5</code></pre></div>
+            </section>
+
+            <section class="section" id="data-convert"><div class="section-header"><div class="section-icon green">🔄</div><h2>数据转换</h2></div>
+                <p>在「数据转换」Tab 指定 images/ 和 jsons/ 目录后点击转换，自动完成 JSON 解析、severity 提取、YOLO 格式转换、训练/验证集分割、data.yaml 生成。</p>
+            </section>
+
+            <section class="section" id="score-design"><div class="section-header"><div class="section-icon orange">📊</div><h2>评分标准设计</h2></div>
+                <div class="table-wrapper"><table>
+                    <tr><th>评分</th><th>等级</th><th>描述</th><th>处理</th></tr>
+                    <tr><td>0-1</td><td>可忽略</td><td>极微小瑕疵</td><td>放行</td></tr>
+                    <tr><td>1-3</td><td>轻微</td><td>小划痕、轻微氧化</td><td>记录监控</td></tr>
+                    <tr><td>3-5</td><td>中等</td><td>明显划痕、偏移</td><td>人工复检</td></tr>
+                    <tr><td>5-7</td><td>较严重</td><td>焊点缺失、断裂</td><td>返工修复</td></tr>
+                    <tr><td>7-9</td><td>严重</td><td>大面积腐蚀</td><td>报废</td></tr>
+                    <tr><td>9-10</td><td>极严重</td><td>结构性损坏</td><td>立即隔离</td></tr>
+                </table></div>
+            </section>
+
+            <section class="section" id="training"><div class="section-header"><div class="section-icon green">🎯</div><h2>训练配置</h2></div>
+                <div class="table-wrapper"><table>
+                    <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+                    <tr><td>epochs</td><td>105</td><td>SevSeg 建议 ≥ 100</td></tr>
+                    <tr><td>batch_size</td><td>32</td><td>受显存限制</td></tr>
+                    <tr><td>img_size</td><td>640</td><td>输入分辨率</td></tr>
+                    <tr><td>optimizer</td><td>SGD</td><td>YOLO26 默认 MuSGD</td></tr>
+                    <tr><td>mixup</td><td><strong>0.0</strong></td><td><strong>必须关闭</strong>（Score 不兼容 MixUp）</td></tr>
+                    <tr><td>lambda_score</td><td>0.05</td><td>评分损失权重</td></tr>
+                    <tr><td>gaussian_sigma</td><td>0.10</td><td>Gaussian NLL 标准差</td></tr>
+                </table></div>
+                <div class="tip-box danger"><div class="tip-icon">⚠️</div><div class="tip-content"><strong>MixUp 必须关闭</strong>：MixUp 混合两张图片的像素和标签，但 severity 评分无法线性插值（"严重裂纹 0.3 + 轻微划痕 0.7" = 没有意义的评分），会导致训练不稳定。系统已强制设置。</div></div>
+            </section>
+
+            <section class="section" id="score-loss"><div class="section-header"><div class="section-icon purple">📉</div><h2>Score Loss 调参</h2></div>
+                <div class="table-wrapper"><table>
+                    <tr><th>调整</th><th>效果</th><th>建议场景</th></tr>
+                    <tr><td>lambda_score ↑ (>0.1)</td><td>评分精度高，检测mAP可能下降</td><td>评分精度比检测更重要时</td></tr>
+                    <tr><td>lambda_score ↓ (<0.02)</td><td>评分学不好，severity趋于均值</td><td>不建议</td></tr>
+                    <tr><td>gaussian_sigma ↑ (>0.3)</td><td>更容忍评分误差</td><td>标注不一致时</td></tr>
+                    <tr><td>gaussian_sigma ↓ (<0.05)</td><td>对误差惩罚重，可能不稳定</td><td>标注非常精确时</td></tr>
+                </table></div>
+            </section>
+
+            <section class="section" id="training-tips"><div class="section-header"><div class="section-icon orange">💡</div><h2>训练技巧</h2></div>
+                <ul>
+                    <li><strong>冷启动</strong>：使用 YOLO26m.pt 初始化检测权重，Score Head 随机初始化</li>
+                    <li><strong>score_loss 不下降</strong>：尝试降低学习率到 0.005 或增大 lambda_score</li>
+                    <li><strong>数据增强</strong>：Mosaic=1.0, FlipLR=0.5 效果好；MixUp 必须关闭</li>
+                    <li><strong>小数据集</strong>（<200张）：用更小模型（n或s），增大 patience 到 80+</li>
+                    <li><strong>评分不均</strong>：增加极端样本或使用过采样</li>
+                </ul>
+            </section>
+
+            <section class="section" id="conversion"><div class="section-header"><div class="section-icon blue">🔄</div><h2>模型转换</h2></div>
+                <p>训练完成后在「转换」Tab 导出 ONNX → TensorRT FP16，自动打包为 .dlhub。</p>
+                <div class="steps">
+                    <div class="step"><div class="step-number">1</div><div class="step-content"><div class="step-title">PyTorch → ONNX</div><div class="step-desc">保留 Score Head 输出通道，输出 shape: [1, N, 4+nc+1]</div></div></div>
+                    <div class="step"><div class="step-number">2</div><div class="step-content"><div class="step-title">ONNX → TensorRT</div><div class="step-desc">FP16/FP32 精度，支持动态 Batch</div></div></div>
+                    <div class="step"><div class="step-number">3</div><div class="step-content"><div class="step-title">自动打包 .dlhub</div><div class="step-desc">模型文件 + deploy_config.json + manifest.json</div></div></div>
+                </div>
+            </section>
+
+            <section class="section" id="mask-gen"><div class="section-header"><div class="section-icon cyan">🎭</div><h2>MaskGenerator 原理</h2></div>
+                <p>MaskGenerator <strong>不需要任何分割标注</strong>，利用 YOLO 检测网络自身的 FPN 特征图（P3/P4/P5）推导像素级缺陷 Mask。核心洞察：检测模型的 FPN 特征天然编码了「缺陷 vs 正常」的语义信息——缺陷区域在特征图上呈现低激活（暗色），正常区域呈现高激活（亮色）。</p>
+
+                <!-- 完整6步流程 -->
+                <div class="architecture-diagram" style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; padding:24px; margin:20px 0;">
+                    <div style="text-align:center; margin-bottom:20px; font-weight:700; color:var(--accent-cyan); font-size:1.1em;">MaskGenerator 完整处理流程（6步）</div>
+
+                    <!-- Step 1 -->
+                    <div style="margin-bottom:20px; padding:16px; background:var(--bg-card); border-left:4px solid var(--accent-blue); border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:var(--accent-blue); color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 1</span>
+                            <strong>尺度自适应特征选择</strong>
+                        </div>
+                        <p style="margin:0; font-size:13px; color:var(--text-secondary);">
+                            根据模型规模自动选择最佳特征组合：<br>
+                            • <strong>小模型</strong>（n/s，通道数≤128）：Layer2 + P3 + P4，权重 [0.35, 0.35, 0.30]<br>
+                            • <strong>大模型</strong>（m/l/x）：P3 + P4 + P5，权重 [0.45, 0.35, 0.20]<br>
+                            P3 分辨率最高（stride=8），提供空间细节；P5 分辨率最低（stride=32），提供语义全局信息。
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div style="margin-bottom:20px; padding:16px; background:var(--bg-card); border-left:4px solid var(--accent-purple); border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:var(--accent-purple); color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 2</span>
+                            <strong>双峰通道选择 + L2 激活</strong>
+                            <span style="background:var(--accent-orange); color:white; padding:2px 8px; border-radius:10px; font-size:11px;">核心改进</span>
+                        </div>
+                        <p style="margin:0 0 10px; font-size:13px; color:var(--text-secondary);">
+                            对每个尺度的特征，在 bbox 对应的区域内裁剪，然后选出最能区分缺陷的通道：
+                        </p>
+                        <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:12px; font-size:12px; line-height:1.8;">
+                            <strong>双峰通道选择算法：</strong><br>
+                            ① 对 bbox crop 内每个通道的所有像素值排序<br>
+                            ② 计算 <strong>最暗 30% 像素的均值</strong>（代表缺陷区域）和 <strong>最亮 30% 像素的均值</strong>（代表正常区域）<br>
+                            ③ 两者之差 = <strong>双峰间距</strong>（bimodal gap）<br>
+                            ④ 选双峰间距最大的 Top-K 个通道（默认 K=48）<br>
+                            ⑤ 在选出的通道上计算 L2 范数：activation = √(Σ channel_i²)<br>
+                            ⑥ min-max 归一化到 [0, 1]
+                        </div>
+                        <div class="tip-box info" style="margin-top:12px;"><div class="tip-icon">💡</div><div class="tip-content">
+                            <strong>为什么双峰比方差好？</strong>方差最大的通道可能只是「背景纹理变化大」，而双峰间距最大的通道是「bbox 内存在两类明显不同区域」——这正是缺陷和正常区域的分离信号。
+                        </div></div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div style="margin-bottom:20px; padding:16px; background:var(--bg-card); border-left:4px solid var(--accent-green); border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:var(--accent-green); color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 3</span>
+                            <strong>多尺度加权融合</strong>
+                        </div>
+                        <p style="margin:0; font-size:13px; color:var(--text-secondary);">
+                            将各尺度的激活图上采样到最高分辨率（P3 级别），按预设权重加权平均。多尺度融合的好处：P3 提供精确的空间位置，P4/P5 提供稳健的语义判断，综合后比单一尺度更可靠。
+                        </p>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div style="margin-bottom:20px; padding:16px; background:var(--bg-card); border-left:4px solid var(--accent-orange); border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:var(--accent-orange); color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 4</span>
+                            <strong>Canny 边缘引导上采样</strong>
+                        </div>
+                        <p style="margin:0 0 10px; font-size:13px; color:var(--text-secondary);">
+                            将低分辨率激活图（~5×7 像素）上采样到 bbox 实际像素大小（如 80×60），同时利用原图的边缘信息引导上采样质量：
+                        </p>
+                        <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:12px; font-size:12px; line-height:1.8;">
+                            ① 双线性插值上采样到目标尺寸<br>
+                            ② 对原图 bbox 区域做 Canny 边缘检测 → 二值边缘图<br>
+                            ③ 膨胀边缘 → 创建「边缘区」和「平滑区」<br>
+                            ④ <strong>边缘区</strong>：保留原始上采样值（保持缺陷边界锐利）<br>
+                            ⑤ <strong>平滑区</strong>：施加高斯模糊（抑制插值噪声）<br>
+                            ⑥ 混合：result = raw × edge_mask + blurred × (1 - edge_mask)
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div style="margin-bottom:20px; padding:16px; background:var(--bg-card); border-left:4px solid var(--accent-cyan); border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:var(--accent-cyan); color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 5</span>
+                            <strong>自适应二值化</strong>
+                        </div>
+                        <p style="margin:0; font-size:13px; color:var(--text-secondary);">
+                            将连续激活值 [0, 1] 转换为二值 mask {0, 1}。使用 <code>cv2.adaptiveThreshold</code>（高斯加权，blockSize=15, C=-5），自动适应局部亮度变化。对于太小的 bbox（边长<15px）退化为 Otsu 全局阈值。
+                        </p>
+                    </div>
+
+                    <!-- Step 6 -->
+                    <div style="margin-bottom:12px; padding:16px; background:var(--bg-card); border-left:4px solid #e74c3c; border-radius:0 10px 10px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <span style="background:#e74c3c; color:white; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:700;">Step 6</span>
+                            <strong>形态学后处理</strong>
+                        </div>
+                        <p style="margin:0; font-size:13px; color:var(--text-secondary);">
+                            <strong>闭操作</strong>（7×7 椭圆核）：填充 mask 内的小孔洞，连接近邻区域<br>
+                            <strong>开操作</strong>（3×3 椭圆核）：去除孤立的噪声小点<br>
+                            最终输出 {0, 1} 二值 mask，1 = 缺陷像素，0 = 正常像素。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 坐标系统说明 -->
+                <div style="background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin:20px 0;">
+                    <div style="font-weight:700; color:var(--accent-blue); margin-bottom:12px;">📐 坐标系统与位置还原</div>
+                    <div style="font-size:13px; color:var(--text-secondary); line-height:1.8;">
+                        <strong>整个 MaskGenerator 在模型输入空间（640×640，含 letterbox 填充）中工作</strong>，不会产生位置偏移：<br><br>
+                        ① YOLO 输出原图坐标 bbox → model.py 映射到 640×640 模型空间 bbox_model<br>
+                        ② MaskGenerator 在 P3/P4/P5 上按 bbox_model 裁剪 → 生成 mask_raw（模型空间大小）<br>
+                        ③ model.py 将 mask_raw resize 回原图 bbox 大小 → 最终 mask<br><br>
+                        <strong>示例</strong>：原图 2000×976，bbox 原图坐标 (500,400)-(600,450) → 模型空间 (160,292)-(192,308) → P3 裁剪 3×5 → 上采样到 16×32 → resize 回 100×50 = 原图 bbox 大小 ✓
+                    </div>
+                </div>
+
+                <div class="tip-box info"><div class="tip-icon">💡</div><div class="tip-content"><strong>核心思想</strong>：检测模型的 FPN 特征图天然编码了缺陷语义——缺陷区域在高方差/高双峰通道上呈现独特的激活模式。MaskGenerator 利用这一特性，通过通道选择 + 多尺度融合 + 边缘引导上采样，将特征图的语义信息转化为像素级 mask。这是<strong>零标注</strong>的近似方法，精度取决于缺陷与背景的特征差异程度。</div></div>
+            </section>
+
+            <section class="section" id="inference"><div class="section-header"><div class="section-icon green">🔍</div><h2>批量推理</h2></div>
+                <p>每张图片输出：</p>
+                <ul>
+                    <li><strong>检测可视化</strong>（vis_xxx.jpg）：检测框 + 类别 + severity + 置信度</li>
+                    <li><strong>二值 Mask</strong>（mask_xxx.jpg）：黑白缺陷区域</li>
+                    <li><strong>轮廓叠加</strong>（contour_xxx.jpg）：原图 + 绿色缺陷轮廓</li>
+                    <li><strong>CSV 结果</strong>（results.csv）：所有检测的结构化数据</li>
+                </ul>
+            </section>
+
+            <section class="section" id="deploy"><div class="section-header"><div class="section-icon orange">🚀</div><h2>TensorRT 部署</h2></div>
+                <p>解包 .dlhub → 读取 deploy_config.json → 加载 TensorRT engine → 按 input 配置做预处理 → 推理 → 解析输出中最后一列为 severity。</p>
+                <div class="tip-box success"><div class="tip-icon">✅</div><div class="tip-content">deploy_config.json 中包含完整的预处理参数（input shape、normalize、letterbox_color）和类别映射，无需手动记忆参数。</div></div>
+            </section>
+
+            <section class="section" id="api"><div class="section-header"><div class="section-icon blue">📚</div><h2>API 参考</h2></div>
+                <div class="code-block"><div class="code-header">核心类</div><pre><code>class SevSegYOLO:
+    def __init__(self, model_path, device='cuda', conf=0.25, mask_enabled=True)
+    def predict(self, image_path, conf=None) -> SevSegResult
+
+class SevSegResult:
+    image: np.ndarray           # 原始图像
+    detections: List[Detection]  # 检测结果列表
+
+class Detection:
+    bbox: (x1, y1, x2, y2)     # 边界框坐标
+    class_name: str             # 类别名
+    confidence: float           # 置信度
+    severity: float             # 严重程度 0-10
+    mask: np.ndarray | None     # 二值 Mask</code></pre></div>
+            </section>
+
+            <section class="section" id="faq"><div class="section-header"><div class="section-icon orange">❓</div><h2>常见问题</h2></div>
+                <div class="faq-item" style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px;">
+                    <div class="faq-question" style="font-weight:600; margin-bottom:8px;">Q: severity 不填会怎样？</div>
+                    <div class="faq-answer" style="color:var(--text-secondary);">默认 5.0。强烈建议手动填写准确值。</div>
+                </div>
+                <div class="faq-item" style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px;">
+                    <div class="faq-question" style="font-weight:600; margin-bottom:8px;">Q: 可以不使用评分功能吗？</div>
+                    <div class="faq-answer" style="color:var(--text-secondary);">可以。所有样本 severity 设为相同值，模型退化为普通检测器。</div>
+                </div>
+                <div class="faq-item" style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px;">
+                    <div class="faq-question" style="font-weight:600; margin-bottom:8px;">Q: MaskGenerator Mask 精度如何？</div>
+                    <div class="faq-answer" style="color:var(--text-secondary);">MaskGenerator 从 FPN 特征图推导 mask，精度取决于缺陷与背景在特征空间中的分离度。边缘清晰、与背景对比明显的缺陷效果好；与背景纹理相似的模糊缺陷可能不够精确。这是零标注的近似方法，如需像素级精确分割，请使用语义分割模块。</div>
+                </div>
+                <div class="faq-item" style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px;">
+                    <div class="faq-question" style="font-weight:600; margin-bottom:8px;">Q: 为什么 MixUp 必须关闭？</div>
+                    <div class="faq-answer" style="color:var(--text-secondary);">MixUp 混合两张图片像素和标签。severity 不能线性插值——「严重裂纹×0.3 + 轻微划痕×0.7 = severity 5.2」没有物理意义。</div>
+                </div>
+                <div class="faq-item" style="margin-bottom:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px;">
+                    <div class="faq-question" style="font-weight:600; margin-bottom:8px;">Q: 支持哪些 YOLO 版本？</div>
+                    <div class="faq-answer" style="color:var(--text-secondary);">推荐 YOLO26-Score（最新架构）。也支持 YOLO11-Score。需要 ultralytics ≥ 8.4.0。</div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script>
+        // 侧边栏高亮
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    const id = entry.target.id;
+                    const activeLink = document.querySelector(`.nav-link[href="#${id}"]`);
+                    if (activeLink) activeLink.classList.add('active');
+                }
+            });
+        }, { rootMargin: '-20% 0px -70% 0px' });
+        sections.forEach(s => observer.observe(s));
+        // 代码高亮
+        if (typeof hljs !== 'undefined') document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+    </script>
+</body>
+</html>

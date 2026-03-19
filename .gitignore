@@ -1,0 +1,115 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ===========================
+# Virtual environments
+# ===========================
+venv/
+env/
+.env
+.venv/
+
+# ===========================
+# IDE / Editor
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# ===========================
+# OS artifacts
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Deep Learning artifacts
+# ===========================
+*.pth
+*.pt
+*.onnx
+*.engine
+*.trt
+*.bin
+!dlhub_project/dlhub/frontend/dist/**
+*.weights
+*.h5
+*.pb
+*.tflite
+*.caffemodel
+
+# ===========================
+# Training outputs
+# ===========================
+output/
+runs/
+logs/
+wandb/
+mlruns/
+
+# ===========================
+# Model conversion outputs
+# ===========================
+converted/
+*.dlhub
+*.pkg
+
+# ===========================
+# Data (user-specific)
+# ===========================
+datasets/
+data/images/
+data/labels/
+calibration_data/
+
+# ===========================
+# Node.js (frontend)
+# ===========================
+node_modules/
+package-lock.json
+
+# ===========================
+# Temporary / Logs
+# ===========================
+*.log
+*.tmp
+*.bak
+*.cache
+.pytest_cache/
+.mypy_cache/
+
+# ===========================
+# DL-Hub runtime files
+# ===========================
+dlhub_config.json
+.dlhub/ui_params.json
+dlhub_project/dlhub/users.json
+
+# ===========================
+# Pretrained models (download separately)
+# ===========================
+pretrained_model/**
+!pretrained_model/.gitkeep
+!pretrained_model/*/.gitkeep
+
+# ===========================
+# PatchCore / Faiss artifacts
+# ===========================
+*.npy
+*.npz
+*.faiss
+exports/

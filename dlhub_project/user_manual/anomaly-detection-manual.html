@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>异常检测模块 - 完整使用手册 | DL-Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-green-dim: rgba(16, 185, 129, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.1);
+            --accent-purple: #8b5cf6;
+            --accent-purple-dim: rgba(139, 92, 246, 0.1);
+            --accent-orange: #f59e0b;
+            --accent-orange-dim: rgba(245, 158, 11, 0.1);
+            --accent-red: #ef4444;
+            --accent-red-dim: rgba(239, 68, 68, 0.1);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-dim: rgba(6, 182, 212, 0.1);
+            --accent-teal: #14b8a6;
+            --accent-teal-dim: rgba(20, 184, 166, 0.1);
+            --accent-pink: #ec4899;
+            --accent-pink-dim: rgba(236, 72, 153, 0.1);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #1a1f2e;
+            --sidebar-width: 300px;
+            --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; font-size: 16px; }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .sidebar-logo-text h1 { font-size: 17px; font-weight: 700; }
+        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
+        
+        .nav-section { margin-bottom: 6px; }
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+        .nav-link.active { background: var(--accent-cyan-dim); color: var(--accent-cyan); border-left-color: var(--accent-cyan); }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Hero区域 */
+        .hero {
+            background: linear-gradient(135deg, rgba(6,182,212,0.15) 0%, rgba(20,184,166,0.12) 50%, rgba(59,130,246,0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 70px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '🔬';
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            opacity: 0.08;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-cyan-dim);
+            border: 1px solid rgba(6,182,212,0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 700px; line-height: 1.7; }
+        .hero-meta { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+        .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 内容区 */
+        .content {
+            max-width: 1400px;
+            padding: 60px 80px;
+            margin: 0 auto;
+        }
+        
+        /* 章节样式 */
+        .section { margin-bottom: 70px; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .section-icon.green { background: var(--accent-green-dim); }
+        .section-icon.blue { background: var(--accent-blue-dim); }
+        .section-icon.purple { background: var(--accent-purple-dim); }
+        .section-icon.orange { background: var(--accent-orange-dim); }
+        .section-icon.cyan { background: var(--accent-cyan-dim); }
+        .section-icon.teal { background: var(--accent-teal-dim); }
+        .section-icon.pink { background: var(--accent-pink-dim); }
+        .section-icon.red { background: var(--accent-red-dim); }
+        
+        .section h2 { font-size: 30px; font-weight: 700; }
+        .section h3 { font-size: 22px; font-weight: 600; margin: 40px 0 18px; color: var(--text-primary); }
+        .section h4 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--text-primary); }
+        .section p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.9; }
+        .section ul, .section ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
+        .section li { margin-bottom: 10px; line-height: 1.8; }
+        .section strong { color: var(--text-primary); }
+        
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .card h4 { font-size: 17px; font-weight: 600; margin: 0; }
+        
+        /* 特性网格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.3);
+            box-shadow: 0 12px 40px rgba(6, 182, 212, 0.1);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+        .feature-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.7; }
+        
+        /* 算法流程图 */
+        .algorithm-flow {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+        }
+        .flow-title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: var(--accent-cyan);
+        }
+        .flow-steps {
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .flow-step {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            min-width: 140px;
+            transition: all 0.3s;
+        }
+        .flow-step:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+        .flow-step-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .flow-step-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        .flow-step-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .flow-arrow {
+            display: flex;
+            align-items: center;
+            color: var(--accent-cyan);
+            font-size: 20px;
+        }
+        
+        /* 原理说明卡片 */
+        .principle-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(6,182,212,0.05) 100%);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            border-radius: 16px;
+            padding: 28px;
+            margin: 24px 0;
+        }
+        .principle-card h4 {
+            color: var(--accent-cyan);
+            font-size: 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .principle-card p {
+            color: var(--text-secondary);
+            line-height: 1.9;
+            margin-bottom: 12px;
+        }
+        .principle-card ul {
+            color: var(--text-secondary);
+            padding-left: 20px;
+        }
+        .principle-card li {
+            margin-bottom: 8px;
+        }
+        
+        /* 公式块 */
+        .formula-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--accent-cyan);
+            text-align: center;
+            overflow-x: auto;
+        }
+        .formula-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-family: var(--font-sans);
+        }
+        
+        /* 对比图 */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .comparison-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+        }
+        .comparison-card.good {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        .comparison-card.bad {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        .comparison-card h5 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .comparison-card.good h5 { color: var(--accent-green); }
+        .comparison-card.bad h5 { color: var(--accent-red); }
+        
+        /* 模型卡片 */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .model-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+        .model-card.recommended {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+        }
+        .model-card.recommended::before {
+            content: '⭐ 推荐';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .model-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--accent-cyan); }
+        .model-stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+        .model-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .model-stat-value { color: var(--text-primary); font-weight: 600; }
+        .model-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        td { color: var(--text-secondary); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:last-child td { border-bottom: none; }
+        
+        /* 代码块 */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-lang {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .code-copy {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-copy:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        pre {
+            padding: 18px;
+            overflow-x: auto;
+            margin: 0;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        :not(pre) > code {
+            background: var(--code-bg);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: var(--accent-cyan);
+        }
+        
+        /* 提示框 */
+        .tip-box {
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .tip-box.info {
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .tip-box.success {
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .tip-box.warning {
+            background: var(--accent-orange-dim);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .tip-box.danger {
+            background: var(--accent-red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .tip-box.cyan {
+            background: var(--accent-cyan-dim);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+        .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .tip-content { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .tip-content strong { color: var(--text-primary); }
+        
+        /* 步骤指引 */
+        .steps { margin: 24px 0; }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 48px;
+            bottom: -8px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-cyan) 0%, transparent 100%);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06b6d4, #14b8a6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+            color: white;
+        }
+        .step-content { flex: 1; padding-top: 6px; }
+        .step-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+        .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        
+        /* 文件树 */
+        .file-tree {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.9;
+            margin: 20px 0;
+        }
+        .file-tree .folder { color: var(--accent-cyan); }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); font-style: italic; }
+        
+        /* 架构图 */
+        .architecture-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .arch-box {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .arch-box.input { background: var(--accent-blue-dim); border: 2px solid var(--accent-blue); color: var(--accent-blue); }
+        .arch-box.process { background: var(--accent-cyan-dim); border: 2px solid var(--accent-cyan); color: var(--accent-cyan); }
+        .arch-box.output { background: var(--accent-green-dim); border: 2px solid var(--accent-green); color: var(--accent-green); }
+        .arch-arrow { color: var(--text-muted); font-size: 24px; }
+        
+        /* 参数表格样式 */
+        .param-table { width: 100%; }
+        .param-table th:first-child { width: 180px; }
+        .param-table th:nth-child(2) { width: 100px; }
+        .param-table th:nth-child(3) { width: 100px; }
+        .param-default { color: var(--accent-cyan); font-family: var(--font-mono); font-size: 13px; }
+        .param-range { color: var(--accent-teal); font-family: var(--font-mono); font-size: 12px; }
+        
+        /* 阈值指南 */
+        .threshold-guide {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .threshold-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .threshold-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .threshold-item:nth-child(1) .threshold-value { color: var(--accent-green); }
+        .threshold-item:nth-child(2) .threshold-value { color: var(--accent-blue); }
+        .threshold-item:nth-child(3) .threshold-value { color: var(--accent-orange); }
+        .threshold-item:nth-child(4) .threshold-value { color: var(--accent-red); }
+        .threshold-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        .threshold-desc { font-size: 11px; color: var(--text-muted); }
+        
+        /* FAQ样式 */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 18px 22px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .faq-question:hover { background: rgba(255,255,255,0.02); }
+        .faq-question::before { content: '❓'; font-size: 18px; }
+        .faq-answer {
+            padding: 0 22px 18px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.8;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: -1px;
+        }
+        
+        /* 场景模板 */
+        .scene-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        .scene-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .scene-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        .scene-icon { font-size: 28px; margin-bottom: 10px; }
+        .scene-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .scene-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+        .scene-params {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; }
+            .hero { padding: 40px 24px; }
+            .content { padding: 40px 24px; }
+            .hero h1 { font-size: 36px; }
+            .comparison-grid { grid-template-columns: 1fr; }
+            .threshold-guide { grid-template-columns: repeat(2, 1fr); }
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <div class="sidebar-logo-icon">🔬</div>
+                <div class="sidebar-logo-text">
+                    <h1>异常检测</h1>
+                    <span>DL-Hub 模块手册</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">快速开始</div>
+            <a href="#overview" class="nav-link active">📋 功能概览</a>
+            <a href="#quickstart" class="nav-link">🚀 快速上手</a>
+            <a href="#environment" class="nav-link">⚙️ 环境配置</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">算法原理 ⭐</div>
+            <a href="#what-is-anomaly" class="nav-link">🤔 什么是异常检测</a>
+            <a href="#patchcore-intro" class="nav-link">🧠 PatchCore简介</a>
+            <a href="#feature-extraction" class="nav-link">🔍 特征提取</a>
+            <a href="#memory-bank" class="nav-link">💾 Memory Bank</a>
+            <a href="#coreset-sampling" class="nav-link">🎯 CoreSet采样</a>
+            <a href="#knn-search" class="nav-link">📐 KNN搜索</a>
+            <a href="#score-calculation" class="nav-link">📊 分数计算</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">数据准备</div>
+            <a href="#data-format" class="nav-link">📁 数据格式</a>
+            <a href="#data-tips" class="nav-link">💡 数据建议</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">模型训练</div>
+            <a href="#model-library" class="nav-link">🏛️ Backbone库</a>
+            <a href="#scene-templates" class="nav-link">📋 场景模板</a>
+            <a href="#train-params" class="nav-link">🎛️ 训练参数</a>
+            <a href="#training-process" class="nav-link">📈 训练过程</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">阈值与评估</div>
+            <a href="#threshold" class="nav-link">🎚️ 阈值设置</a>
+            <a href="#evaluation" class="nav-link">📊 效果评估</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">推理部署</div>
+            <a href="#batch-inference" class="nav-link">🔍 批量推理</a>
+            <a href="#api-usage" class="nav-link">💻 API使用</a>
+            <a href="#export" class="nav-link">📦 模型导出</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">附录</div>
+            <a href="#faq" class="nav-link">❓ 常见问题</a>
+            <a href="#changelog" class="nav-link">📝 更新日志</a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- Hero区域 -->
+        <div class="hero">
+            <div class="hero-badge">
+                <span>📖</span>
+                <span>完整使用手册 v2.1</span>
+            </div>
+            <h1>异常检测模块</h1>
+            <p class="hero-subtitle">
+                基于 PatchCore 的工业级无监督异常检测解决方案。<strong>仅需良品数据</strong>即可训练，
+                自动学习正常样本特征分布，精准识别各类异常缺陷，输出像素级热力图定位。
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span>🏗️</span>
+                    <span>算法：PatchCore</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>🎯</span>
+                    <span>无监督学习</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📊</span>
+                    <span>像素级定位</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📅</span>
+                    <span>更新：2025年1月</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 内容区 -->
+        <div class="content">
+            <!-- 功能概览 -->
+            <section id="overview" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">📋</div>
+                    <h2>功能概览</h2>
+                </div>
+                
+                <p>
+                    异常检测模块是 DL-Hub 的核心组件之一，专为工业质检场景设计。与传统的有监督缺陷检测不同，
+                    <strong>异常检测只需要良品（正常）样本进行训练</strong>，无需收集和标注各种缺陷类型，
+                    即可检测出任何偏离正常模式的异常。
+                </p>
+                
+                <div class="tip-box cyan">
+                    <div class="tip-icon">🌟</div>
+                    <div class="tip-content">
+                        <strong>核心优势：</strong>在工业场景中，良品容易获取，而缺陷样本稀少且种类繁多。
+                        异常检测可以解决"长尾问题"——即使是从未见过的新型缺陷也能被检出！
+                    </div>
+                </div>
+                
+                <h3>核心特性</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-cyan-dim);">🎯</div>
+                        <h4>仅需良品数据</h4>
+                        <p>无需收集和标注缺陷样本，只需提供良品图像即可完成训练，大幅降低数据准备成本。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">🔬</div>
+                        <h4>检测未知缺陷</h4>
+                        <p>基于"异常=偏离正常"的原理，可以检测任何类型的异常，包括从未见过的新型缺陷。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">🗺️</div>
+                        <h4>像素级定位</h4>
+                        <p>输出异常热力图，精确标注异常区域位置，支持可视化展示和进一步分析。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">⚡</div>
+                        <h4>训练速度快</h4>
+                        <p>无需迭代训练，一次性提取特征并构建索引，训练过程通常只需几分钟。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-orange-dim);">🎚️</div>
+                        <h4>灵活阈值调节</h4>
+                        <p>归一化分数输出（0-100），可根据实际需求灵活调整检测敏感度。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-pink-dim);">🚀</div>
+                        <h4>高效部署</h4>
+                        <p>支持导出为 ONNX、TensorRT 格式，可在 GPU/CPU 上高效推理。</p>
+                    </div>
+                </div>
+                
+                <h3>适用场景</h3>
+                <ul>
+                    <li><strong>工业表面检测：</strong>金属划痕、布料瑕疵、玻璃裂纹、塑料缺陷</li>
+                    <li><strong>PCB/半导体：</strong>焊点异常、元件缺失、线路断裂、晶圆缺陷</li>
+                    <li><strong>纹理检测：</strong>布料、皮革、木材等纹理产品的异常检测</li>
+                    <li><strong>食品医药：</strong>药片、胶囊、食品包装的外观检测</li>
+                    <li><strong>3C产品：</strong>手机屏幕、笔记本外壳、精密零件的质检</li>
+                </ul>
+            </section>
+            
+            <!-- 快速上手 -->
+            <section id="quickstart" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">🚀</div>
+                    <h2>快速上手</h2>
+                </div>
+                
+                <p>
+                    只需4个步骤，即可完成从数据准备到异常检测的完整流程。整个训练过程通常只需几分钟！
+                </p>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">准备良品数据</div>
+                            <div class="step-desc">
+                                收集正常（良品）样本图像，放入 <code>good/</code> 文件夹。
+                                <strong>建议至少 50-100 张</strong>，覆盖正常样本的各种变化（光照、角度等）。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">配置训练参数</div>
+                            <div class="step-desc">
+                                在"数据配置"页面设置数据集路径、选择场景模板或手动调整参数。
+                                推荐使用"通用检测"模板作为起点。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">开始训练</div>
+                            <div class="step-desc">
+                                点击"开始训练"，系统会自动提取特征、构建 Memory Bank、校准阈值。
+                                训练过程通常只需 2-10 分钟。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">批量检测</div>
+                            <div class="step-desc">
+                                切换到"批量检测"页面，选择训练好的模型和待检测图像文件夹，
+                                设置阈值后开始检测。输出包含分数、判定结果和热力图。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tip-box success">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>快速验证：</strong>如果有少量异常样本，可以放入 <code>defect/</code> 文件夹，
+                        系统会在评估阶段计算检测指标，帮助你选择最佳阈值。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 环境配置 -->
+            <section id="environment" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">⚙️</div>
+                    <h2>环境配置</h2>
+                </div>
+                
+                <h3>系统要求</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>配置项</th>
+                                <th>最低要求</th>
+                                <th>推荐配置</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>操作系统</strong></td>
+                                <td>Windows 10 / Ubuntu 18.04</td>
+                                <td>Windows 11 / Ubuntu 22.04</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GPU</strong></td>
+                                <td>NVIDIA GTX 1060 6GB</td>
+                                <td>NVIDIA RTX 3080 10GB+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>内存</strong></td>
+                                <td>16GB</td>
+                                <td>32GB+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Python</strong></td>
+                                <td>3.8+</td>
+                                <td>3.10 / 3.11</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>依赖安装</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bash</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-bash"># 核心依赖
+pip install torch torchvision  # PyTorch
+pip install timm               # 预训练模型库
+pip install faiss-cpu          # 或 faiss-gpu（GPU加速）
+pip install scikit-learn       # PCA等算法
+pip install opencv-python      # 图像处理
+pip install pillow             # 图像读取
+
+# 可选依赖
+pip install onnxruntime-gpu    # ONNX推理
+pip install tensorrt           # TensorRT加速</code></pre>
+                </div>
+            </section>
+            
+            <!-- 什么是异常检测 -->
+            <section id="what-is-anomaly" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">🤔</div>
+                    <h2>什么是异常检测</h2>
+                </div>
+                
+                <p>
+                    在深入了解 PatchCore 算法之前，我们先来理解"异常检测"这个任务本身。
+                </p>
+                
+                <h3>有监督 vs 无监督</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-card bad">
+                        <h5>❌ 有监督缺陷检测（传统方法）</h5>
+                        <ul style="font-size: 14px; color: var(--text-secondary);">
+                            <li>需要收集大量<strong>缺陷样本</strong>并标注</li>
+                            <li>缺陷类型必须预先定义（划痕、污点、裂纹...）</li>
+                            <li>无法检测<strong>未见过的缺陷类型</strong></li>
+                            <li>缺陷样本难以收集（稀有、成本高）</li>
+                            <li>数据不平衡问题严重</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card good">
+                        <h5>✅ 无监督异常检测（本模块）</h5>
+                        <ul style="font-size: 14px; color: var(--text-secondary);">
+                            <li><strong>仅需良品数据</strong>即可训练</li>
+                            <li>无需预定义缺陷类型</li>
+                            <li>可检测<strong>任何异常</strong>，包括未知缺陷</li>
+                            <li>良品容易获取，数据准备成本低</li>
+                            <li>天然解决数据不平衡问题</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h3>核心思想：学习"正常"</h3>
+                <div class="principle-card">
+                    <h4>💡 异常检测的基本原理</h4>
+                    <p>
+                        异常检测的核心思想是：<strong>学习正常样本的特征分布，然后将偏离这个分布的样本判定为异常</strong>。
+                    </p>
+                    <p>
+                        想象你是一个质检员，每天检查同一种产品。经过一段时间，你对"正常"的产品长什么样已经了然于胸。
+                        当出现一个"不太对劲"的产品时，即使你说不清具体哪里有问题，你也能感觉到它与正常产品不同。
+                    </p>
+                    <p>
+                        <strong>异常检测算法就是在模拟这个过程</strong>——通过大量正常样本学习"正常"的模式，
+                        然后用数学方法量化"与正常的偏离程度"。
+                    </p>
+                </div>
+                
+                <h3>为什么需要异常检测？</h3>
+                <ul>
+                    <li><strong>长尾问题：</strong>工业缺陷种类繁多，某些缺陷极其罕见，难以收集足够样本</li>
+                    <li><strong>未知缺陷：</strong>新产品上线时，可能出现设计阶段未预料到的缺陷类型</li>
+                    <li><strong>快速部署：</strong>只需良品数据，可以快速建立检测系统</li>
+                    <li><strong>通用性强：</strong>同一算法可应用于各种产品，无需针对每种缺陷单独训练</li>
+                </ul>
+            </section>
+            
+            <!-- PatchCore简介 -->
+            <section id="patchcore-intro" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">🧠</div>
+                    <h2>PatchCore 算法简介</h2>
+                </div>
+                
+                <p>
+                    PatchCore 是目前工业异常检测领域<strong>最先进、应用最广泛</strong>的算法之一，
+                    由 Amazon 于 2022 年提出，在 MVTec AD 等权威基准上取得了 SOTA 性能。
+                </p>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">📚</div>
+                    <div class="tip-content">
+                        <strong>论文：</strong>《Towards Total Recall in Industrial Anomaly Detection》<br>
+                        PatchCore 的核心创新是使用预训练 CNN 提取局部特征，结合 Memory Bank 进行高效异常检测。
+                    </div>
+                </div>
+                
+                <h3>算法流程总览</h3>
+                <div class="algorithm-flow">
+                    <div class="flow-title">PatchCore 训练与推理流程</div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🖼️</div>
+                            <div class="flow-step-title">良品图像</div>
+                            <div class="flow-step-desc">输入训练集</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🧠</div>
+                            <div class="flow-step-title">特征提取</div>
+                            <div class="flow-step-desc">预训练CNN</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">📉</div>
+                            <div class="flow-step-title">PCA降维</div>
+                            <div class="flow-step-desc">可选优化</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🎯</div>
+                            <div class="flow-step-title">CoreSet采样</div>
+                            <div class="flow-step-desc">保留代表性</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">💾</div>
+                            <div class="flow-step-title">Memory Bank</div>
+                            <div class="flow-step-desc">特征库</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🔍</div>
+                            <div class="flow-step-title">KNN搜索</div>
+                            <div class="flow-step-desc">计算距离</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🗺️</div>
+                            <div class="flow-step-title">异常图</div>
+                            <div class="flow-step-desc">热力图输出</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>为什么 PatchCore 效果好？</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">🎓</div>
+                        <h4>预训练知识迁移</h4>
+                        <p>使用 ImageNet 预训练的 CNN（如 WideResNet50）提取特征，继承了强大的视觉表示能力。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">🧩</div>
+                        <h4>局部特征建模</h4>
+                        <p>不是对整张图像建模，而是对每个局部区域（Patch）单独建模，提高了定位精度。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">🎯</div>
+                        <h4>CoreSet 智能采样</h4>
+                        <p>通过贪心采样保留最具代表性的特征，在保持精度的同时大幅减少存储和计算量。</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 特征提取 -->
+            <section id="feature-extraction" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">🔍</div>
+                    <h2>特征提取详解</h2>
+                </div>
+                
+                <p>
+                    特征提取是 PatchCore 的第一步，也是最关键的一步。它决定了模型能够"看到"图像中的什么信息。
+                </p>
+                
+                <h3>预训练 Backbone</h3>
+                <div class="principle-card">
+                    <h4>🧠 为什么使用预训练模型？</h4>
+                    <p>
+                        深度神经网络（如 ResNet）在 ImageNet 上经过大规模训练后，已经学会了丰富的视觉特征表示——
+                        从边缘、纹理到形状、语义，各个层级的特征都能被很好地提取。
+                    </p>
+                    <p>
+                        <strong>我们直接复用这些预训练的特征提取能力</strong>，而不是从头训练。
+                        这就是为什么 PatchCore 只需要少量良品数据就能工作得很好。
+                    </p>
+                </div>
+                
+                <h3>多层特征融合</h3>
+                <p>
+                    PatchCore 默认从 Backbone 的 <strong>Layer2</strong> 和 <strong>Layer3</strong> 提取特征并融合：
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>层级</th>
+                                <th>特征维度</th>
+                                <th>感受野</th>
+                                <th>特征类型</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Layer2</strong></td>
+                                <td>512-D</td>
+                                <td>较小</td>
+                                <td>局部纹理、边缘细节</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Layer3</strong></td>
+                                <td>1024-D</td>
+                                <td>较大</td>
+                                <td>中层语义、形状结构</td>
+                            </tr>
+                            <tr>
+                                <td><strong>融合后</strong></td>
+                                <td>1536-D</td>
+                                <td>多尺度</td>
+                                <td>综合特征表示</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>为什么不用更深的层？</strong><br>
+                        更深的层（Layer4、Layer5）具有更强的语义信息，但空间分辨率更低，
+                        不利于精确定位。Layer2-3 在"局部细节"和"全局语义"之间取得了很好的平衡。
+                    </div>
+                </div>
+                
+                <h3>Patch 特征</h3>
+                <div class="principle-card">
+                    <h4>🧩 什么是 Patch 特征？</h4>
+                    <p>
+                        以输入尺寸 256×256 为例，经过 Layer2 后特征图尺寸为 32×32。
+                        这意味着图像被划分为 32×32 = <strong>1024 个 Patch</strong>，每个 Patch 对应原图的一小块区域。
+                    </p>
+                    <p>
+                        每个 Patch 都有一个 1536 维的特征向量，描述了这个局部区域的视觉特性。
+                        <strong>这就是 PatchCore 中"Patch"的含义</strong>——基于局部区域进行异常检测。
+                    </p>
+                </div>
+                
+                <div class="formula-block">
+                    <div class="formula-label">一张图像的 Patch 数量</div>
+                    N_patches = (H / 8) × (W / 8) = 32 × 32 = 1024 个 Patch
+                </div>
+            </section>
+            
+            <!-- Memory Bank -->
+            <section id="memory-bank" class="section">
+                <div class="section-header">
+                    <div class="section-icon teal">💾</div>
+                    <h2>Memory Bank 详解</h2>
+                </div>
+                
+                <p>
+                    Memory Bank（记忆库）是 PatchCore 的核心数据结构，存储了所有正常样本的 Patch 特征。
+                </p>
+                
+                <h3>Memory Bank 是什么？</h3>
+                <div class="principle-card">
+                    <h4>💾 特征库的本质</h4>
+                    <p>
+                        Memory Bank 本质上是一个<strong>大型特征向量集合</strong>：
+                    </p>
+                    <ul>
+                        <li>训练时：收集所有良品图像的所有 Patch 特征，存入 Memory Bank</li>
+                        <li>推理时：将测试图像的 Patch 特征与 Memory Bank 中的特征进行比对</li>
+                        <li>如果某个 Patch 特征与 Memory Bank 中所有特征都"距离较远"，则判定为异常</li>
+                    </ul>
+                </div>
+                
+                <h3>规模计算示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">计算示例</span>
+                    </div>
+                    <pre><code># 假设有 100 张训练图像，输入尺寸 256×256
+训练图像数: 100
+每张图像 Patch 数: 32 × 32 = 1,024
+总 Patch 数: 100 × 1,024 = 102,400
+特征维度: 1,536
+
+# Memory Bank 原始大小
+102,400 × 1,536 × 4字节(float32) = 629 MB
+
+# 这就是为什么需要 CoreSet 采样来压缩！</code></pre>
+                </div>
+                
+                <h3>PCA 降维（可选）</h3>
+                <p>
+                    当特征维度较高时（如 1536-D），可以使用 PCA 进行降维以加速后续计算：
+                </p>
+                <ul>
+                    <li><strong>默认目标维度：</strong>256-D</li>
+                    <li><strong>方差保留：</strong>通常保留 99.5% 的方差信息</li>
+                    <li><strong>效果：</strong>计算速度提升 3-5 倍，精度几乎无损</li>
+                </ul>
+            </section>
+            
+            <!-- CoreSet采样 -->
+            <section id="coreset-sampling" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">🎯</div>
+                    <h2>CoreSet 采样详解</h2>
+                </div>
+                
+                <p>
+                    CoreSet 采样是 PatchCore 的关键创新之一，它解决了 Memory Bank 过大导致的存储和计算问题。
+                </p>
+                
+                <h3>为什么需要采样？</h3>
+                <div class="principle-card">
+                    <h4>⚠️ 直接使用全部特征的问题</h4>
+                    <p>
+                        如果直接存储所有 Patch 特征到 Memory Bank：
+                    </p>
+                    <ul>
+                        <li><strong>存储爆炸：</strong>1000 张图像 → 约 6GB 特征数据</li>
+                        <li><strong>搜索缓慢：</strong>KNN 搜索时间与 Memory Bank 大小成正比</li>
+                        <li><strong>冗余信息：</strong>很多 Patch 特征高度相似，存在大量冗余</li>
+                    </ul>
+                </div>
+                
+                <h3>k-Center Greedy 算法</h3>
+                <p>
+                    CoreSet 使用<strong>贪心最远点采样</strong>（k-Center Greedy）算法来选择代表性特征：
+                </p>
+                
+                <div class="algorithm-flow">
+                    <div class="flow-title">CoreSet 采样过程</div>
+                    <div class="flow-steps">
+                        <div class="flow-step">
+                            <div class="flow-step-icon">1️⃣</div>
+                            <div class="flow-step-title">随机初始化</div>
+                            <div class="flow-step-desc">选第一个点</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">2️⃣</div>
+                            <div class="flow-step-title">计算距离</div>
+                            <div class="flow-step-desc">到已选集合</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">3️⃣</div>
+                            <div class="flow-step-title">选最远点</div>
+                            <div class="flow-step-desc">加入集合</div>
+                        </div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">
+                            <div class="flow-step-icon">🔄</div>
+                            <div class="flow-step-title">重复迭代</div>
+                            <div class="flow-step-desc">直到达标</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="formula-block">
+                    <div class="formula-label">采样后的 Memory Bank 大小</div>
+                    采样后大小 = 原始大小 × 采样率 (默认 1%)
+                </div>
+                
+                <h3>采样率选择指南</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>采样率</th>
+                                <th>适用场景</th>
+                                <th>精度</th>
+                                <th>速度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>0.5%</strong></td>
+                                <td>实时检测、边缘设备</td>
+                                <td>较低</td>
+                                <td>最快</td>
+                            </tr>
+                            <tr>
+                                <td><strong>1%</strong> ⭐</td>
+                                <td>通用场景（默认）</td>
+                                <td>良好</td>
+                                <td>快</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3-5%</strong></td>
+                                <td>高精度要求</td>
+                                <td>高</td>
+                                <td>中等</td>
+                            </tr>
+                            <tr>
+                                <td><strong>10%</strong></td>
+                                <td>极高精度、微小缺陷</td>
+                                <td>最高</td>
+                                <td>较慢</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- KNN搜索 -->
+            <section id="knn-search" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">📐</div>
+                    <h2>KNN 搜索详解</h2>
+                </div>
+                
+                <p>
+                    KNN（K-Nearest Neighbors，K近邻）搜索是异常检测的核心步骤——
+                    通过计算测试特征到 Memory Bank 中最近邻的距离来判断异常程度。
+                </p>
+                
+                <h3>异常检测原理</h3>
+                <div class="principle-card">
+                    <h4>📐 距离 = 异常程度</h4>
+                    <p>
+                        核心思想非常直观：
+                    </p>
+                    <ul>
+                        <li><strong>正常样本：</strong>其特征与 Memory Bank 中的正常特征<strong>距离较近</strong></li>
+                        <li><strong>异常样本：</strong>其特征与所有正常特征都<strong>距离较远</strong></li>
+                    </ul>
+                    <p>
+                        因此，<strong>最近邻距离越大，异常可能性越高</strong>。
+                    </p>
+                </div>
+                
+                <div class="formula-block">
+                    <div class="formula-label">异常分数计算</div>
+                    Anomaly_Score(patch) = min_distance(patch, Memory_Bank)
+                </div>
+                
+                <h3>Faiss 加速</h3>
+                <p>
+                    当 Memory Bank 较大时，暴力搜索效率低下。我们使用 Facebook 开源的 <strong>Faiss</strong> 库进行加速：
+                </p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>索引类型</th>
+                                <th>适用规模</th>
+                                <th>速度</th>
+                                <th>精度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Flat</strong></td>
+                                <td>&lt; 5,000</td>
+                                <td>基准</td>
+                                <td>精确</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IVFFlat</strong></td>
+                                <td>5,000 - 50,000</td>
+                                <td>快 3-5x</td>
+                                <td>接近精确</td>
+                            </tr>
+                            <tr>
+                                <td><strong>IVFPQ</strong></td>
+                                <td>&gt; 50,000</td>
+                                <td>快 10-50x</td>
+                                <td>近似</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>K 值选择</h3>
+                <p>
+                    参数 K 表示取多少个近邻来计算距离，默认 <strong>K=9</strong>：
+                </p>
+                <ul>
+                    <li><strong>K=1：</strong>只看最近邻，对噪声敏感</li>
+                    <li><strong>K=5-9：</strong>推荐范围，平衡稳定性和敏感度</li>
+                    <li><strong>K&gt;15：</strong>过于平滑，可能漏检小异常</li>
+                </ul>
+            </section>
+            
+            <!-- 分数计算 -->
+            <section id="score-calculation" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">📊</div>
+                    <h2>分数计算与归一化</h2>
+                </div>
+                
+                <p>
+                    PatchCore 输出两种结果：<strong>像素级异常图</strong>和<strong>图像级分数</strong>。
+                </p>
+                
+                <h3>异常图生成</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">计算 Patch 距离</div>
+                            <div class="step-desc">每个 Patch 的最近邻距离构成一个 32×32 的距离矩阵</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">上采样</div>
+                            <div class="step-desc">使用双线性插值将距离矩阵上采样到原图尺寸</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">高斯平滑</div>
+                            <div class="step-desc">应用高斯滤波使热力图更平滑，减少噪点（σ=4）</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>分数归一化</h3>
+                <p>
+                    原始距离值没有固定范围，不便于设置阈值。我们使用<strong>百分位数归一化</strong>将分数映射到 0-100：
+                </p>
+                
+                <div class="formula-block">
+                    <div class="formula-label">归一化公式</div>
+                    Normalized_Score = (Raw_Score - P1) / (P99 - P1) × 100
+                </div>
+                
+                <p>
+                    其中 P1 和 P99 是训练集分数的第 1 和第 99 百分位数。这样：
+                </p>
+                <ul>
+                    <li><strong>分数 0-50：</strong>与正常样本相似，大概率正常</li>
+                    <li><strong>分数 50-100：</strong>超出正常范围，可能异常</li>
+                    <li><strong>分数 &gt;100：</strong>严重异常（原始分数超过 P99）</li>
+                </ul>
+                
+                <h3>图像级分数</h3>
+                <p>
+                    图像级分数是异常图中的<strong>最大值</strong>，代表整张图像的异常程度：
+                </p>
+                <div class="formula-block">
+                    <div class="formula-label">图像级分数</div>
+                    Image_Score = max(Anomaly_Map)
+                </div>
+            </section>
+            
+            <!-- 数据格式 -->
+            <section id="data-format" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">📁</div>
+                    <h2>数据格式</h2>
+                </div>
+                
+                <h3>目录结构</h3>
+                <div class="file-tree">
+                    <span class="folder">📁 my_dataset/</span><br>
+                    <span class="folder">├── 📁 good/</span> <span class="comment"># 良品图像（必需）</span><br>
+                    │   ├── <span class="file">img_001.jpg</span><br>
+                    │   ├── <span class="file">img_002.png</span><br>
+                    │   ├── <span class="file">img_003.jpg</span><br>
+                    │   └── <span class="file">...</span> <span class="comment"># 建议 50-500 张</span><br>
+                    <span class="folder">└── 📁 defect/</span> <span class="comment"># 异常图像（可选，用于评估）</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">defect_001.jpg</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">defect_002.png</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">...</span>
+                </div>
+                
+                <div class="tip-box success">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <strong>最简配置：</strong>只需要 <code>good/</code> 文件夹和良品图像即可开始训练！
+                        <code>defect/</code> 文件夹是可选的，用于评估模型效果和优化阈值。
+                    </div>
+                </div>
+                
+                <h3>图像要求</h3>
+                <ul>
+                    <li><strong>格式支持：</strong>JPG、JPEG、PNG、BMP、TIFF</li>
+                    <li><strong>尺寸要求：</strong>无严格限制，训练时会自动缩放</li>
+                    <li><strong>建议尺寸：</strong>保持一致的宽高比，分辨率不低于 256×256</li>
+                    <li><strong>数量建议：</strong>良品 50-500 张，覆盖各种正常变化</li>
+                </ul>
+            </section>
+            
+            <!-- 数据建议 -->
+            <section id="data-tips" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">💡</div>
+                    <h2>数据准备建议</h2>
+                </div>
+                
+                <h3>良品数据质量</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">✅</div>
+                        <h4>覆盖正常变化</h4>
+                        <p>收集不同光照、角度、位置的正常样本，让模型学习"正常"的完整分布。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">✅</div>
+                        <h4>确保无异常</h4>
+                        <p>良品数据中不能混入异常样本！否则模型会把异常也学成"正常"。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-red-dim);">❌</div>
+                        <h4>避免过于单一</h4>
+                        <p>如果所有良品都完全相同，模型可能对正常变化过于敏感，导致误报。</p>
+                    </div>
+                </div>
+                
+                <h3>数据量建议</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>场景</th>
+                                <th>建议良品数量</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>简单纹理</strong>（布料、金属表面）</td>
+                                <td>50-100 张</td>
+                                <td>纹理规律性强，少量样本即可覆盖</td>
+                            </tr>
+                            <tr>
+                                <td><strong>结构产品</strong>（PCB、零件）</td>
+                                <td>100-200 张</td>
+                                <td>结构复杂度适中</td>
+                            </tr>
+                            <tr>
+                                <td><strong>复杂场景</strong>（多变光照、位置）</td>
+                                <td>200-500 张</td>
+                                <td>需要覆盖各种正常变化</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Backbone库 -->
+            <section id="model-library" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">🏛️</div>
+                    <h2>Backbone 库</h2>
+                </div>
+                
+                <p>
+                    Backbone 是特征提取的核心网络，不同的 Backbone 在精度和速度之间有不同的权衡。
+                </p>
+                
+                <div class="model-grid">
+                    <div class="model-card recommended">
+                        <div class="model-name">WideResNet50-2</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 特征维度: <span class="model-stat-value">1536-D</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">中等</span></div>
+                            <div class="model-stat">🎯 精度: <span class="model-stat-value">高</span></div>
+                        </div>
+                        <div class="model-desc">高精度骨干网络，适合精细缺陷检测。工业场景首选，在精度和速度之间取得最佳平衡。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">ResNet50</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 特征维度: <span class="model-stat-value">1536-D</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">中等</span></div>
+                            <div class="model-stat">🎯 精度: <span class="model-stat-value">高</span></div>
+                        </div>
+                        <div class="model-desc">标准骨干网络，精度速度平衡，适合大多数工业检测场景。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">ResNet18</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 特征维度: <span class="model-stat-value">384-D</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">快</span></div>
+                            <div class="model-stat">🎯 精度: <span class="model-stat-value">中等</span></div>
+                        </div>
+                        <div class="model-desc">轻量级骨干网络，适合实时检测和边缘设备部署，牺牲部分精度换取速度。</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 场景模板 -->
+            <section id="scene-templates" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">📋</div>
+                    <h2>场景模板</h2>
+                </div>
+                
+                <p>
+                    为了简化配置，我们预设了多个场景模板，覆盖常见的工业检测需求：
+                </p>
+                
+                <div class="scene-grid">
+                    <div class="scene-card">
+                        <div class="scene-icon">🔧</div>
+                        <div class="scene-name">通用检测</div>
+                        <div class="scene-desc">平衡配置，适合大多数场景，推荐作为起点</div>
+                        <div class="scene-params">
+                            backbone: wide_resnet50_2<br>
+                            image_size: 256<br>
+                            coreset_ratio: 1%
+                        </div>
+                    </div>
+                    <div class="scene-card">
+                        <div class="scene-icon">🎯</div>
+                        <div class="scene-name">高精度检测</div>
+                        <div class="scene-desc">适合精细缺陷检测，速度较慢</div>
+                        <div class="scene-params">
+                            backbone: wide_resnet50_2<br>
+                            image_size: 384<br>
+                            coreset_ratio: 5%
+                        </div>
+                    </div>
+                    <div class="scene-card">
+                        <div class="scene-icon">🔬</div>
+                        <div class="scene-name">极高精度</div>
+                        <div class="scene-desc">最高精度，适合微小缺陷</div>
+                        <div class="scene-params">
+                            backbone: wide_resnet50_2<br>
+                            image_size: 512<br>
+                            coreset_ratio: 10%
+                        </div>
+                    </div>
+                    <div class="scene-card">
+                        <div class="scene-icon">⚡</div>
+                        <div class="scene-name">快速检测</div>
+                        <div class="scene-desc">适合实时检测，精度略降</div>
+                        <div class="scene-params">
+                            backbone: resnet18<br>
+                            image_size: 224<br>
+                            coreset_ratio: 0.5%
+                        </div>
+                    </div>
+                    <div class="scene-card">
+                        <div class="scene-icon">🧵</div>
+                        <div class="scene-name">纹理检测</div>
+                        <div class="scene-desc">布料、金属表面纹理缺陷</div>
+                        <div class="scene-params">
+                            backbone: wide_resnet50_2<br>
+                            image_size: 256<br>
+                            augmentation: flip + jitter
+                        </div>
+                    </div>
+                    <div class="scene-card">
+                        <div class="scene-icon">🔌</div>
+                        <div class="scene-name">结构检测</div>
+                        <div class="scene-desc">PCB、组装件结构缺陷</div>
+                        <div class="scene-params">
+                            backbone: wide_resnet50_2<br>
+                            image_size: 384<br>
+                            augmentation: disabled
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 训练参数 -->
+            <section id="train-params" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">🎛️</div>
+                    <h2>训练参数详解</h2>
+                </div>
+                
+                <h3>核心参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>范围</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>image_size</strong></td>
+                                <td class="param-default">256</td>
+                                <td class="param-range">224/256/384/512</td>
+                                <td>输入图像尺寸。越大精度越高，但速度越慢</td>
+                            </tr>
+                            <tr>
+                                <td><strong>backbone</strong></td>
+                                <td class="param-default">wide_resnet50_2</td>
+                                <td class="param-range">-</td>
+                                <td>特征提取网络</td>
+                            </tr>
+                            <tr>
+                                <td><strong>coreset_ratio</strong></td>
+                                <td class="param-default">0.01 (1%)</td>
+                                <td class="param-range">0.001-0.1</td>
+                                <td>CoreSet 采样率。越高精度越高，速度越慢</td>
+                            </tr>
+                            <tr>
+                                <td><strong>pca_components</strong></td>
+                                <td class="param-default">256</td>
+                                <td class="param-range">64-512</td>
+                                <td>PCA 降维后的维度</td>
+                            </tr>
+                            <tr>
+                                <td><strong>knn_k</strong></td>
+                                <td class="param-default">9</td>
+                                <td class="param-range">1-50</td>
+                                <td>KNN 搜索的 K 值</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>后处理参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>gaussian_sigma</strong></td>
+                                <td class="param-default">4.0</td>
+                                <td>高斯平滑的标准差。越大热力图越平滑</td>
+                            </tr>
+                            <tr>
+                                <td><strong>score_aggregation</strong></td>
+                                <td class="param-default">max</td>
+                                <td>图像级分数聚合方式（max/mean）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- 训练过程 -->
+            <section id="training-process" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">📈</div>
+                    <h2>训练过程</h2>
+                </div>
+                
+                <p>
+                    PatchCore 的训练不是传统的梯度下降迭代，而是一次性的特征提取和索引构建过程。
+                </p>
+                
+                <h3>训练阶段</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>阶段</th>
+                                <th>耗时占比</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>1. 初始化</strong></td>
+                                <td>~5%</td>
+                                <td>加载 Backbone、创建 DataLoader</td>
+                            </tr>
+                            <tr>
+                                <td><strong>2. 特征提取</strong></td>
+                                <td>~40%</td>
+                                <td>提取所有图像的 Patch 特征</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3. PCA 降维</strong></td>
+                                <td>~10%</td>
+                                <td>使用增量 PCA 进行降维</td>
+                            </tr>
+                            <tr>
+                                <td><strong>4. CoreSet 采样</strong></td>
+                                <td>~20%</td>
+                                <td>贪心采样保留代表性特征</td>
+                            </tr>
+                            <tr>
+                                <td><strong>5. 构建索引</strong></td>
+                                <td>~10%</td>
+                                <td>构建 Faiss KNN 索引</td>
+                            </tr>
+                            <tr>
+                                <td><strong>6. 阈值校准</strong></td>
+                                <td>~10%</td>
+                                <td>计算归一化参数和预设阈值</td>
+                            </tr>
+                            <tr>
+                                <td><strong>7. 模型导出</strong></td>
+                                <td>~5%</td>
+                                <td>保存模型和配置文件</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">⏱️</div>
+                    <div class="tip-content">
+                        <strong>训练时间参考：</strong><br>
+                        100 张图像 → 约 2-3 分钟<br>
+                        500 张图像 → 约 5-10 分钟<br>
+                        （基于 RTX 3080，256×256 输入）
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 阈值设置 -->
+            <section id="threshold" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">🎚️</div>
+                    <h2>阈值设置</h2>
+                </div>
+                
+                <p>
+                    阈值是决定"多异常才算异常"的关键参数。归一化分数范围为 0-100，
+                    <strong>分数 ≥ 阈值</strong> 判定为异常。
+                </p>
+                
+                <h3>阈值指南</h3>
+                <div class="threshold-guide">
+                    <div class="threshold-item">
+                        <div class="threshold-value">30-40</div>
+                        <div class="threshold-label">高召回</div>
+                        <div class="threshold-desc">漏检少，误报多<br>安全关键场景</div>
+                    </div>
+                    <div class="threshold-item">
+                        <div class="threshold-value">40-55</div>
+                        <div class="threshold-label">平衡</div>
+                        <div class="threshold-desc">推荐日常使用<br>精度召回平衡</div>
+                    </div>
+                    <div class="threshold-item">
+                        <div class="threshold-value">55-70</div>
+                        <div class="threshold-label">高精度</div>
+                        <div class="threshold-desc">误报少，可能漏检<br>减少人工复核</div>
+                    </div>
+                    <div class="threshold-item">
+                        <div class="threshold-value">70+</div>
+                        <div class="threshold-label">极严格</div>
+                        <div class="threshold-desc">仅检测明显异常<br>特殊场景使用</div>
+                    </div>
+                </div>
+                
+                <h3>如何选择阈值？</h3>
+                <ol>
+                    <li><strong>先用默认值 50</strong> 进行测试</li>
+                    <li>如果<strong>误报太多</strong>（正常被判为异常）→ 提高阈值</li>
+                    <li>如果<strong>漏检太多</strong>（异常被判为正常）→ 降低阈值</li>
+                    <li>如果有异常样本，可以在"评估验证"页面查看 F1 曲线，找到最优阈值</li>
+                </ol>
+            </section>
+            
+            <!-- 效果评估 -->
+            <section id="evaluation" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">📊</div>
+                    <h2>效果评估</h2>
+                </div>
+                
+                <p>
+                    如果提供了异常样本（<code>defect/</code> 文件夹），系统会自动计算评估指标。
+                </p>
+                
+                <h3>核心指标</h3>
+                <ul>
+                    <li><strong>Precision（精确率）：</strong>预测为异常的样本中，真正异常的比例。精确率高 = 误报少</li>
+                    <li><strong>Recall（召回率）：</strong>所有异常样本中，被正确检出的比例。召回率高 = 漏检少</li>
+                    <li><strong>F1 Score：</strong>精确率和召回率的调和平均，综合评价指标</li>
+                    <li><strong>AUROC：</strong>不同阈值下的综合性能，越接近 1 越好</li>
+                </ul>
+                
+                <div class="formula-block">
+                    <div class="formula-label">F1 Score 计算</div>
+                    F1 = 2 × (Precision × Recall) / (Precision + Recall)
+                </div>
+            </section>
+            
+            <!-- 批量推理 -->
+            <section id="batch-inference" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">🔍</div>
+                    <h2>批量推理</h2>
+                </div>
+                
+                <p>
+                    训练完成后，可以在"批量检测"页面对大量图像进行异常检测。
+                </p>
+                
+                <h3>输出结果</h3>
+                <ul>
+                    <li><strong>分数：</strong>每张图像的归一化异常分数（0-100）</li>
+                    <li><strong>判定：</strong>基于阈值的 OK/NG 判定</li>
+                    <li><strong>热力图：</strong>像素级异常定位可视化</li>
+                    <li><strong>轮廓图：</strong>异常区域轮廓标注</li>
+                </ul>
+                
+                <h3>导出格式</h3>
+                <p>检测结果可以导出为 CSV 或 JSON 格式，方便后续分析和集成。</p>
+            </section>
+            
+            <!-- API使用 -->
+            <section id="api-usage" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">💻</div>
+                    <h2>API 使用</h2>
+                </div>
+                
+                <h3>Python API 推理</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-python">from inference.predictor import PatchCorePredictor
+
+# 从模型包加载
+predictor = PatchCorePredictor.from_package("output/model.pkg")
+
+# 设置阈值
+predictor.set_threshold(50.0)
+
+# 单张图像推理
+result = predictor.predict("test.jpg")
+
+print(f"分数: {result.score:.1f}")
+print(f"是否异常: {result.is_anomaly}")
+print(f"推理时间: {result.inference_time_ms:.1f} ms")
+
+# 获取热力图
+anomaly_map = result.anomaly_map  # numpy数组, shape=(H, W)
+
+# 批量推理
+results = predictor.predict_batch(["img1.jpg", "img2.jpg", "img3.jpg"])</code></pre>
+                </div>
+                
+                <h3>可视化结果</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-python">from inference.predictor import create_visualization
+import cv2
+
+# 获取可视化结果
+vis = create_visualization(image, result)
+
+# vis 包含:
+# - 'original': 原图
+# - 'heatmap': 热力图
+# - 'overlay': 叠加图
+# - 'binary': 二值掩码
+# - 'contour': 轮廓图
+
+# 保存结果
+cv2.imwrite("overlay.jpg", vis['overlay'][:, :, ::-1])</code></pre>
+                </div>
+            </section>
+            
+            <!-- 模型导出 -->
+            <section id="export" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">📦</div>
+                    <h2>模型导出</h2>
+                </div>
+                
+                <h3>导出格式</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>格式</th>
+                                <th>文件</th>
+                                <th>适用场景</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>PKG</strong></td>
+                                <td>model.pkg</td>
+                                <td>完整打包，包含所有组件，方便分发</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ONNX</strong></td>
+                                <td>backbone.onnx</td>
+                                <td>跨平台推理（CPU/GPU）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>TensorRT</strong></td>
+                                <td>backbone.engine</td>
+                                <td>NVIDIA GPU 高性能推理</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>输出目录结构</h3>
+                <div class="file-tree">
+                    <span class="folder">📁 output/PatchCore_20250130_143522/</span><br>
+                    <span class="folder">├── 📁 weights/</span><br>
+                    │   ├── <span class="file">memory_bank.npz</span> <span class="comment"># Memory Bank</span><br>
+                    │   ├── <span class="file">faiss_index.bin</span> <span class="comment"># Faiss 索引</span><br>
+                    │   └── <span class="file">pca_model.npz</span> <span class="comment"># PCA 模型</span><br>
+                    <span class="folder">├── 📁 exports/</span><br>
+                    │   ├── <span class="file">backbone.onnx</span><br>
+                    │   └── <span class="file">model.pkg</span><br>
+                    ├── <span class="file">config.json</span> <span class="comment"># 完整配置</span><br>
+                    ├── <span class="file">normalization.json</span> <span class="comment"># 归一化参数</span><br>
+                    ├── <span class="file">thresholds.json</span> <span class="comment"># 阈值配置</span><br>
+                    └── <span class="file">training_info.json</span> <span class="comment"># 训练信息</span>
+                </div>
+            </section>
+            
+            <!-- FAQ -->
+            <section id="faq" class="section">
+                <div class="section-header">
+                    <div class="section-icon pink">❓</div>
+                    <h2>常见问题</h2>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">误报太多（正常被判为异常）怎么办？</div>
+                    <div class="faq-answer">
+                        1. <strong>提高阈值</strong>：从 50 调整到 60-70<br>
+                        2. <strong>增加训练数据</strong>：添加更多良品样本，尤其是容易误报的类型<br>
+                        3. <strong>检查数据质量</strong>：确保训练集中没有混入异常样本
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">漏检太多（异常没有被检出）怎么办？</div>
+                    <div class="faq-answer">
+                        1. <strong>降低阈值</strong>：从 50 调整到 30-40<br>
+                        2. <strong>增大图像尺寸</strong>：如果异常很小，尝试 384 或 512<br>
+                        3. <strong>增加采样率</strong>：将 coreset_ratio 从 1% 提高到 5-10%
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">训练速度很慢怎么办？</div>
+                    <div class="faq-answer">
+                        1. 使用更小的 <strong>image_size</strong>（如 224）<br>
+                        2. 使用轻量级 <strong>backbone</strong>（如 ResNet18）<br>
+                        3. 减少 <strong>coreset_ratio</strong>（如 0.5%）<br>
+                        4. 确保使用 GPU 并开启 FP16
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">内存不足怎么办？</div>
+                    <div class="faq-answer">
+                        1. 减少训练图像数量<br>
+                        2. 减小 image_size<br>
+                        3. 开启 use_fp16_features（默认开启）<br>
+                        4. 减少 feature_chunk_size
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">如何检测多种产品？</div>
+                    <div class="faq-answer">
+                        每种产品需要<strong>单独训练一个模型</strong>。异常检测是基于"正常"的定义，
+                        不同产品的"正常"不同，不能混合训练。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 更新日志 -->
+            <section id="changelog" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">📝</div>
+                    <h2>更新日志</h2>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-cyan-dim);">🎉</div>
+                        <h4>v2.1 (2025年1月)</h4>
+                    </div>
+                    <ul style="font-size: 14px; color: var(--text-secondary);">
+                        <li>集成 DL-Hub 平台，支持统一任务管理</li>
+                        <li>全新 Gradio UI 界面，风格统一</li>
+                        <li>新增多个场景模板</li>
+                        <li>优化内存使用，支持增量 PCA</li>
+                        <li>改进阈值校准算法</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-blue-dim);">🚀</div>
+                        <h4>v2.0 (2024年12月)</h4>
+                    </div>
+                    <ul style="font-size: 14px; color: var(--text-secondary);">
+                        <li>完全重构 PatchCore 实现</li>
+                        <li>支持 ONNX 和 TensorRT 导出</li>
+                        <li>新增批量推理功能</li>
+                        <li>支持热力图和轮廓图可视化</li>
+                        <li>归一化分数输出（0-100）</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script>
+        // 代码复制功能
+        function copyCode(btn) {
+            const codeBlock = btn.closest('.code-block').querySelector('code');
+            navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => btn.textContent = '复制', 2000);
+            });
+        }
+        
+        // 代码高亮
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // 导航激活状态
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section[id]');
+        
+        function setActiveNav() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', setActiveNav);
+        setActiveNav();
+    </script>
+</body>
+</html>

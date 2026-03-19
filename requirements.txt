@@ -1,0 +1,57 @@
+# ===================================================
+# DL-Hub — Unified Requirements
+# ===================================================
+# Install base dependencies, then pick task-specific
+# extras as needed.
+# ===================================================
+
+# === DL-Hub Platform (always required) ===
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+psutil>=5.9.0
+pyyaml>=6.0
+gradio>=4.0.0
+
+# === Common ===
+numpy>=1.21.0
+Pillow>=9.0.0
+matplotlib>=3.5.0
+pandas>=1.3.0
+opencv-python>=4.5.0
+tqdm>=4.64.0
+
+# === Image Classification ===
+# pip install torch torchvision timm
+# torch>=2.0.0
+# torchvision>=0.15.0
+# timm>=0.9.0
+
+# === Object Detection ===
+# pip install ultralytics
+# ultralytics>=8.0.0
+
+# === Semantic Segmentation ===
+# pip install mmengine mmcv mmsegmentation
+# mmengine>=0.7.0
+# mmcv>=2.0.0
+# mmsegmentation>=1.0.0
+
+# === Anomaly Detection ===
+# pip install scikit-learn faiss-cpu
+# scikit-learn>=1.0.0
+# faiss-cpu>=1.7.0  (or faiss-gpu)
+
+# === OCR ===
+# pip install paddlepaddle paddleocr paddle2onnx
+# paddlepaddle>=2.5.0  (or paddlepaddle-gpu)
+# paddleocr>=2.7.0
+# paddle2onnx>=1.0.0
+
+# === Model Conversion (optional) ===
+# pip install onnx onnxruntime-gpu
+# onnx>=1.12.0
+# onnxruntime>=1.12.0  (or onnxruntime-gpu)
+# tensorrt (install separately from NVIDIA)
+# openvino (pip install openvino)
