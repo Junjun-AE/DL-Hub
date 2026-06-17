@@ -1,0 +1,2539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图像分类模块 - 完整使用手册 | DL-Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-green-dim: rgba(16, 185, 129, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.1);
+            --accent-purple: #8b5cf6;
+            --accent-purple-dim: rgba(139, 92, 246, 0.1);
+            --accent-orange: #f59e0b;
+            --accent-orange-dim: rgba(245, 158, 11, 0.1);
+            --accent-red: #ef4444;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #1a1f2e;
+            --sidebar-width: 260px;
+            --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; font-size: 16px; }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .sidebar-logo-text h1 { font-size: 17px; font-weight: 700; }
+        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
+        
+        .nav-section { margin-bottom: 6px; }
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+        .nav-link.active { background: var(--accent-green-dim); color: var(--accent-green); border-left-color: var(--accent-green); }
+        
+        /* 主内容区 - 修复：占满右侧空间 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Hero区域 - 全宽 */
+        .hero {
+            background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(59,130,246,0.12) 50%, rgba(139,92,246,0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 70px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '🎯';
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            opacity: 0.08;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 700px; line-height: 1.7; }
+        .hero-meta { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+        .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 内容区 - 修复：更宽的内容区域 */
+        .content {
+            max-width: 1400px;
+            padding: 60px 80px;
+            margin: 0 auto;
+        }
+        
+        /* 章节样式 */
+        .section { margin-bottom: 70px; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .section-icon.green { background: var(--accent-green-dim); }
+        .section-icon.blue { background: var(--accent-blue-dim); }
+        .section-icon.purple { background: var(--accent-purple-dim); }
+        .section-icon.orange { background: var(--accent-orange-dim); }
+        
+        .section h2 { font-size: 30px; font-weight: 700; }
+        .section h3 { font-size: 22px; font-weight: 600; margin: 40px 0 18px; color: var(--text-primary); }
+        .section h4 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--text-primary); }
+        .section p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.9; }
+        .section ul, .section ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
+        .section li { margin-bottom: 10px; line-height: 1.8; }
+        .section strong { color: var(--text-primary); }
+        
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .card-title { font-size: 17px; font-weight: 600; }
+        
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th {
+            background: var(--bg-tertiary);
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        
+        /* 代码块 - 修复：正确的换行显示 */
+        .code-block {
+            position: relative;
+            margin: 24px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-lang { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .code-copy {
+            padding: 4px 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-copy:hover { background: var(--accent-green-dim); border-color: var(--accent-green); color: var(--accent-green); }
+        .code-block pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            background: var(--code-bg) !important;
+            white-space: pre;  /* 保持换行 */
+        }
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            white-space: pre;  /* 保持换行 */
+        }
+        code:not([class*="language-"]) {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            color: var(--accent-green);
+        }
+        
+        /* 文件树 - 修复：正确显示换行 */
+        .file-tree {
+            background: var(--code-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.9;
+            overflow-x: auto;
+            white-space: pre;  /* 关键：保持换行和空格 */
+        }
+        .file-tree .folder { color: var(--accent-blue); font-weight: 500; }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); font-style: italic; }
+        
+        /* 提示框 */
+        .tip {
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .tip-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .tip-content { flex: 1; }
+        .tip-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
+        .tip-text { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .tip.info { background: var(--accent-blue-dim); border: 1px solid rgba(59,130,246,0.3); }
+        .tip.info .tip-title { color: var(--accent-blue); }
+        .tip.success { background: var(--accent-green-dim); border: 1px solid rgba(16,185,129,0.3); }
+        .tip.success .tip-title { color: var(--accent-green); }
+        .tip.warning { background: var(--accent-orange-dim); border: 1px solid rgba(245,158,11,0.3); }
+        .tip.warning .tip-title { color: var(--accent-orange); }
+        .tip.danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .tip.danger .tip-title { color: var(--accent-red); }
+        
+        /* 网格 */
+        .grid { display: grid; gap: 20px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        
+        /* 特性卡片 */
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover { border-color: var(--accent-green); transform: translateY(-3px); }
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+        }
+        .feature-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+        .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+        
+        /* 模型卡片 */
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+        .model-card:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); }
+        .model-icon { font-size: 28px; flex-shrink: 0; }
+        .model-info { flex: 1; min-width: 0; }
+        .model-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .model-meta { font-size: 12px; color: var(--text-muted); }
+        .model-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .model-badge.recommended { background: var(--accent-green-dim); color: var(--accent-green); }
+        .model-badge.lightweight { background: var(--accent-blue-dim); color: var(--accent-blue); }
+        .model-badge.heavy { background: var(--accent-purple-dim); color: var(--accent-purple); }
+        
+        /* 步骤 */
+        .steps { position: relative; padding-left: 45px; }
+        .steps::before {
+            content: '';
+            position: absolute;
+            left: 17px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent-green), var(--accent-blue));
+            border-radius: 2px;
+        }
+        .step { position: relative; margin-bottom: 35px; }
+        .step:last-child { margin-bottom: 0; }
+        .step-number {
+            position: absolute;
+            left: -45px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .step-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
+        .step-content { color: var(--text-secondary); }
+        .step-content p { margin-bottom: 12px; }
+        
+        /* 参数样式 */
+        .param-name { font-family: var(--font-mono); color: var(--accent-green); font-weight: 500; }
+        .param-type { font-family: var(--font-mono); color: var(--accent-purple); font-size: 12px; }
+        .param-default { font-family: var(--font-mono); color: var(--accent-orange); font-size: 12px; }
+        .tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .tag.required { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .tag.optional { background: rgba(107,114,128,0.2); color: var(--text-muted); }
+        
+        /* 返回顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.4);
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(16,185,129,0.5); }
+        
+        /* 分隔线 */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
+            margin: 50px 0;
+        }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        
+        /* 响应式 */
+        @media (max-width: 1100px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; }
+            .content { padding: 40px 30px; }
+            .hero { padding: 50px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边导航 -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <div class="sidebar-logo-icon">🎯</div>
+                <div class="sidebar-logo-text">
+                    <h1>图像分类</h1>
+                    <span>Classification Manual</span>
+                </div>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">快速开始</div>
+            <a href="#overview" class="nav-link active"><span>📖</span> 概述</a>
+            <a href="#quickstart" class="nav-link"><span>🚀</span> 快速入门</a>
+            <a href="#installation" class="nav-link"><span>📦</span> 环境配置</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">数据准备</div>
+            <a href="#data-format" class="nav-link"><span>📁</span> 数据集格式</a>
+            <a href="#data-tips" class="nav-link"><span>💡</span> 数据处理技巧</a>
+            <a href="#data-augment" class="nav-link"><span>🎨</span> 数据增强详解</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型训练</div>
+            <a href="#models" class="nav-link"><span>🧠</span> 支持的模型</a>
+            <a href="#training-params" class="nav-link"><span>⚙️</span> 训练参数详解</a>
+            <a href="#training-process" class="nav-link"><span>▶️</span> 训练流程</a>
+            <a href="#training-tips" class="nav-link"><span>🎯</span> 调参技巧</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型输出</div>
+            <a href="#checkpoint-format" class="nav-link"><span>💾</span> 检查点格式</a>
+            <a href="#output-structure" class="nav-link"><span>📂</span> 输出目录结构</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型转换</div>
+            <a href="#conversion" class="nav-link"><span>🔄</span> 转换概述</a>
+            <a href="#onnx-export" class="nav-link"><span>📤</span> ONNX导出</a>
+            <a href="#tensorrt" class="nav-link"><span>⚡</span> TensorRT转换</a>
+            <a href="#openvino" class="nav-link"><span>🔷</span> OpenVINO转换</a>
+            <a href="#onnxruntime" class="nav-link"><span>🟢</span> ONNX Runtime</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">推理与部署</div>
+            <a href="#inference" class="nav-link"><span>🔍</span> 批量推理</a>
+            <a href="#api" class="nav-link"><span>🔌</span> API接口调用</a>
+            <a href="#deployment" class="nav-link"><span>🚢</span> 部署指南</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">附录</div>
+            <a href="#faq" class="nav-link"><span>❓</span> 常见问题</a>
+            <a href="#changelog" class="nav-link"><span>📋</span> 更新日志</a>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-badge"><span>📚</span><span>完整使用手册 v2.0</span></div>
+            <h1>图像分类模块</h1>
+            <p class="hero-subtitle">
+                基于 PyTorch 和 TIMM 库构建的专业图像分类训练平台，提供 15+ 精选预训练模型，
+                支持从数据准备、模型训练、模型转换到生产部署的完整工作流程。无论您是深度学习新手还是资深算法工程师，
+                都能快速上手并获得专业级的训练效果。
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item"><span>🧠</span><span>15+ 精选模型</span></div>
+                <div class="hero-meta-item"><span>⚡</span><span>多后端转换</span></div>
+                <div class="hero-meta-item"><span>🎨</span><span>可视化界面</span></div>
+                <div class="hero-meta-item"><span>📦</span><span>一键部署</span></div>
+                <div class="hero-meta-item"><span>🔧</span><span>API支持</span></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 概述 -->
+            <section class="section" id="overview">
+                <div class="section-header">
+                    <div class="section-icon green">📖</div>
+                    <h2>概述</h2>
+                </div>
+                
+                <p>
+                    图像分类模块是 DL-Hub 深度学习平台的核心组件之一，专为工业级图像分类任务设计。
+                    该模块基于 PyTorch 深度学习框架和 TIMM（PyTorch Image Models）库构建，
+                    集成了业界最先进的预训练模型和训练技术，让用户无需编写代码即可完成专业级的模型训练。
+                </p>
+                
+                <p>
+                    无论您是需要进行产品质检、医疗影像分析、农业病害识别，还是其他图像分类任务，
+                    本模块都能提供从数据准备到模型部署的端到端解决方案。通过直观的 Web 界面，
+                    您可以轻松配置训练参数、监控训练进度、转换模型格式，并进行批量推理测试。
+                </p>
+
+                <h3>核心特性</h3>
+                <div class="grid grid-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">🧠</div>
+                        <div class="feature-title">丰富的模型库</div>
+                        <div class="feature-desc">精选 EfficientNet、ResNet、MobileNet 等 15+ 经典模型，覆盖移动端到服务器全场景部署需求</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">⚡</div>
+                        <div class="feature-title">高效训练引擎</div>
+                        <div class="feature-desc">支持混合精度训练（AMP）、多GPU并行、学习率预热、梯度累积等高级训练技术</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">🔄</div>
+                        <div class="feature-title">多后端转换</div>
+                        <div class="feature-desc">一键转换至 ONNX、TensorRT、OpenVINO、ONNX Runtime，支持 FP32/FP16/INT8 多种精度</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-orange-dim);">🎨</div>
+                        <div class="feature-title">数据增强</div>
+                        <div class="feature-desc">内置 MixUp、CutMix、RandAugment 等先进数据增强策略，有效提升模型泛化能力</div>
+                    </div>
+                </div>
+
+                <h3>适用场景</h3>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">🏭</div>
+                            <div class="card-title">工业质检</div>
+                        </div>
+                        <ul>
+                            <li>产品外观缺陷分类（划痕、污渍、变形等）</li>
+                            <li>良品/不良品自动判定</li>
+                            <li>零部件分类识别</li>
+                            <li>包装完整性检测</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">🏥</div>
+                            <div class="card-title">医疗影像</div>
+                        </div>
+                        <ul>
+                            <li>病变组织分类</li>
+                            <li>疾病筛查辅助诊断</li>
+                            <li>细胞类型识别</li>
+                            <li>X光/CT图像分析</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-purple-dim);">🌾</div>
+                            <div class="card-title">农业识别</div>
+                        </div>
+                        <ul>
+                            <li>作物病害识别</li>
+                            <li>果蔬成熟度分级</li>
+                            <li>害虫种类识别</li>
+                            <li>农产品品质分类</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-orange-dim);">🛒</div>
+                            <div class="card-title">零售与安防</div>
+                        </div>
+                        <ul>
+                            <li>商品识别与分类</li>
+                            <li>货架陈列检测</li>
+                            <li>内容审核与过滤</li>
+                            <li>场景分类识别</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>技术架构</h3>
+                <p>本模块采用模块化设计，各组件职责清晰，易于扩展和维护：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">架构图</span></div>
+                    <pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                           图像分类模块架构                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                 │
+│  │  Web UI层   │    │   API层     │    │   CLI层     │                 │
+│  │  (Gradio)   │    │  (Python)   │    │  (argparse) │                 │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘                 │
+│         │                  │                  │                         │
+│         └──────────────────┼──────────────────┘                         │
+│                            ▼                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        核心引擎层                                 │   │
+│  │  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐    │   │
+│  │  │ 数据加载器 │  │ 模型工厂  │  │ 训练引擎  │  │ 转换引擎  │    │   │
+│  │  │ DataLoader│  │ModelFactory│  │  Trainer  │  │ Converter │    │   │
+│  │  └───────────┘  └───────────┘  └───────────┘  └───────────┘    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                            │                                            │
+│                            ▼                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        基础设施层                                 │   │
+│  │  PyTorch  │  TIMM  │  ONNX  │  TensorRT  │  OpenVINO  │  CUDA  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 快速入门 -->
+            <section class="section" id="quickstart">
+                <div class="section-header">
+                    <div class="section-icon blue">🚀</div>
+                    <h2>快速入门</h2>
+                </div>
+                
+                <p>
+                    本节将指导您在 5-10 分钟内完成第一次模型训练。我们将使用一个简单的示例，
+                    帮助您熟悉整个训练流程。在开始之前，请确保已按照「环境配置」章节完成环境安装。
+                </p>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">准备数据集</div>
+                        <div class="step-content">
+                            <p>将您的图片按类别整理到不同的文件夹中。文件夹的名称将作为类别名称，系统会自动识别。</p>
+                            <div class="file-tree"><span class="folder">dataset/</span>
+├── <span class="folder">cat/</span>                      <span class="comment"># 类别1：猫</span>
+│   ├── <span class="file">cat_001.jpg</span>
+│   ├── <span class="file">cat_002.jpg</span>
+│   ├── <span class="file">cat_003.png</span>
+│   └── <span class="file">...</span>                 <span class="comment"># 更多图片</span>
+├── <span class="folder">dog/</span>                      <span class="comment"># 类别2：狗</span>
+│   ├── <span class="file">dog_001.jpg</span>
+│   ├── <span class="file">dog_002.jpg</span>
+│   └── <span class="file">...</span>
+└── <span class="folder">bird/</span>                     <span class="comment"># 类别3：鸟</span>
+    ├── <span class="file">bird_001.jpg</span>
+    └── <span class="file">...</span></div>
+                            <div class="tip info">
+                                <div class="tip-icon">💡</div>
+                                <div class="tip-content">
+                                    <div class="tip-title">数据集要求</div>
+                                    <div class="tip-text">
+                                        每个类别建议至少 50 张图片。图片格式支持 JPG、PNG、BMP、WebP 等常见格式。
+                                        系统会自动将数据集按比例划分为训练集和验证集。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">启动训练界面</div>
+                        <div class="step-content">
+                            <p>您可以通过以下两种方式启动图像分类模块：</p>
+                            <div class="code-block">
+                                <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                                <pre><code class="language-bash"># 方式一：通过 DL-Hub 启动（推荐）
+# 在 DL-Hub 主界面点击「图像分类」任务卡片
+
+# 方式二：独立运行
+cd model_image_classification
+python app.py
+
+# 方式三：指定端口运行
+python app.py --port 7861
+
+# 启动后，在浏览器中访问显示的地址（通常是 http://127.0.0.1:7860）</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">配置训练参数</div>
+                        <div class="step-content">
+                            <p>在 Web 界面的「训练」标签页中进行以下配置：</p>
+                            <ol>
+                                <li><strong>数据集路径</strong>：输入或选择您准备好的数据集文件夹路径</li>
+                                <li><strong>模型选择</strong>：选择模型系列（推荐 EfficientNet）和规模（推荐「中」）</li>
+                                <li><strong>训练参数</strong>：首次使用可保持默认值，或根据需要调整：
+                                    <ul>
+                                        <li>训练轮数（Epochs）：建议 30-50 轮</li>
+                                        <li>批次大小（Batch Size）：根据显存调整，通常 16-32</li>
+                                        <li>学习率：默认 0.001，通常无需修改</li>
+                                    </ul>
+                                </li>
+                                <li><strong>GPU选择</strong>：如有多张显卡，可选择指定 GPU</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">开始训练并监控</div>
+                        <div class="step-content">
+                            <p>点击「开始训练」按钮后，您可以实时监控训练进度：</p>
+                            <ul>
+                                <li><strong>训练日志</strong>：显示每个 epoch 的损失值、准确率、学习率等信息</li>
+                                <li><strong>损失曲线</strong>：实时绘制训练损失和验证损失的变化趋势</li>
+                                <li><strong>准确率曲线</strong>：展示验证集准确率的提升过程</li>
+                                <li><strong>最佳模型</strong>：系统会自动保存验证准确率最高的模型</li>
+                            </ul>
+                            <p>训练过程中可以随时点击「停止训练」按钮安全中断，系统会保存当前检查点。</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-title">使用训练好的模型</div>
+                        <div class="step-content">
+                            <p>训练完成后，您可以：</p>
+                            <ul>
+                                <li><strong>批量推理</strong>：切换到「推理」标签页，对新图片进行分类预测</li>
+                                <li><strong>模型转换</strong>：切换到「转换」标签页，将模型转换为 ONNX/TensorRT 等部署格式</li>
+                                <li><strong>导出模型</strong>：在输出目录中找到 <code>best_model.pth</code> 文件</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip success">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <div class="tip-title">快速验证建议</div>
+                        <div class="tip-text">
+                            首次使用时，建议选择较小的模型（如 MobileNetV3-Small）和较少的训练轮数（如 5-10 轮），
+                            快速验证整个流程是否正常工作。确认无误后，再使用更大的模型和更多的训练轮数进行正式训练。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+            <!-- 环境配置 -->
+            <section class="section" id="installation">
+                <div class="section-header">
+                    <div class="section-icon purple">📦</div>
+                    <h2>环境配置</h2>
+                </div>
+                
+                <p>
+                    本节详细介绍如何配置运行环境。正确的环境配置是顺利训练的前提，
+                    请根据您的硬件条件选择合适的配置方案。
+                </p>
+
+                <h3>系统要求</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>组件</th><th>最低要求</th><th>推荐配置</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>操作系统</strong></td><td>Windows 10 / Ubuntu 18.04</td><td>Windows 11 / Ubuntu 22.04</td><td>支持 64 位系统</td></tr>
+                            <tr><td><strong>Python</strong></td><td>3.8</td><td>3.10 / 3.11</td><td>建议使用 Anaconda 管理</td></tr>
+                            <tr><td><strong>CUDA</strong></td><td>11.0（GPU训练）</td><td>11.8 / 12.1</td><td>CPU 训练无需 CUDA</td></tr>
+                            <tr><td><strong>GPU显存</strong></td><td>4GB（小模型）</td><td>8GB+（大模型）</td><td>决定可用的 Batch Size</td></tr>
+                            <tr><td><strong>系统内存</strong></td><td>8GB</td><td>16GB+</td><td>影响数据加载速度</td></tr>
+                            <tr><td><strong>硬盘空间</strong></td><td>10GB</td><td>50GB+ SSD</td><td>包含模型和数据集</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>推荐的 GPU 配置</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>GPU型号</th><th>显存</th><th>推荐 Batch Size</th><th>适用模型</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>RTX 3060 / 4060</td><td>8-12GB</td><td>32-64</td><td>所有模型</td></tr>
+                            <tr><td>RTX 3070 / 4070</td><td>8-12GB</td><td>32-64</td><td>所有模型</td></tr>
+                            <tr><td>RTX 3080 / 4080</td><td>10-16GB</td><td>64-128</td><td>所有模型，可多GPU</td></tr>
+                            <tr><td>RTX 3090 / 4090</td><td>24GB</td><td>128-256</td><td>所有模型，大规模训练</td></tr>
+                            <tr><td>Tesla T4</td><td>16GB</td><td>64-128</td><td>云服务器推荐</td></tr>
+                            <tr><td>Tesla V100</td><td>16-32GB</td><td>128-256</td><td>专业训练</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>依赖包列表</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">requirements.txt</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code># ============ 核心依赖 ============
+torch>=2.0.0              # PyTorch 深度学习框架
+torchvision>=0.15.0       # 图像处理和预训练模型
+timm>=0.9.0               # PyTorch Image Models
+gradio>=4.0.0             # Web UI 框架
+
+# ============ 数据处理 ============
+pillow>=9.0.0             # 图像读取和处理
+pandas>=1.5.0             # 数据分析和CSV处理
+numpy>=1.24.0             # 数值计算
+
+# ============ 可视化 ============
+matplotlib>=3.6.0         # 训练曲线绘制
+
+# ============ 模型转换（可选）============
+onnx>=1.14.0              # ONNX 格式支持
+onnxruntime>=1.15.0       # ONNX Runtime 推理
+onnxruntime-gpu>=1.15.0   # GPU 加速推理（可选）
+
+# ============ 高级转换（按需安装）============
+# tensorrt                # NVIDIA TensorRT（需单独安装）
+# openvino                # Intel OpenVINO（需单独安装）
+# onnxsim                 # ONNX 简化工具</code></pre>
+                </div>
+
+                <h3>安装步骤</h3>
+                <h4>步骤 1：创建 Conda 环境</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># 创建新的 Python 环境
+conda create -n dlhub python=3.10 -y
+
+# 激活环境
+conda activate dlhub
+
+# 验证 Python 版本
+python --version</code></pre>
+                </div>
+
+                <h4>步骤 2：安装 PyTorch</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># CUDA 11.8 版本（推荐）
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# CUDA 12.1 版本
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# CPU 版本（无 GPU）
+pip install torch torchvision torchaudio
+
+# 验证安装
+python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA可用: {torch.cuda.is_available()}'); print(f'GPU数量: {torch.cuda.device_count()}')"</code></pre>
+                </div>
+
+                <h4>步骤 3：安装其他依赖</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># 安装核心依赖
+pip install timm gradio pandas matplotlib pillow pyyaml
+
+# 安装模型转换依赖（可选）
+pip install onnx onnxruntime-gpu
+
+# 验证 TIMM 安装
+python -c "import timm; print(f'TIMM版本: {timm.__version__}'); print(f'可用模型数: {len(timm.list_models())}')"</code></pre>
+                </div>
+
+                <div class="tip warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <div class="tip-title">CUDA 版本匹配</div>
+                        <div class="tip-text">
+                            请确保 PyTorch 的 CUDA 版本与系统安装的 CUDA 驱动兼容。
+                            使用 <code>nvidia-smi</code> 查看驱动支持的最高 CUDA 版本，
+                            使用 <code>nvcc --version</code> 查看 CUDA Toolkit 版本。
+                            PyTorch 的 CUDA 版本可以低于驱动支持的版本，但不能高于。
+                        </div>
+                    </div>
+                </div>
+
+                <h4>步骤 4：验证安装</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python"># 完整环境验证脚本
+import sys
+print(f"Python 版本: {sys.version}")
+
+import torch
+print(f"\nPyTorch 版本: {torch.__version__}")
+print(f"CUDA 可用: {torch.cuda.is_available()}")
+if torch.cuda.is_available():
+    print(f"CUDA 版本: {torch.version.cuda}")
+    print(f"GPU 数量: {torch.cuda.device_count()}")
+    for i in range(torch.cuda.device_count()):
+        print(f"  GPU {i}: {torch.cuda.get_device_name(i)}")
+        print(f"    显存: {torch.cuda.get_device_properties(i).total_memory / 1024**3:.1f} GB")
+
+import timm
+print(f"\nTIMM 版本: {timm.__version__}")
+print(f"可用模型数: {len(timm.list_models())}")
+
+import gradio
+print(f"\nGradio 版本: {gradio.__version__}")
+
+print("\n✅ 环境配置完成！")</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 数据集格式 -->
+            <section class="section" id="data-format">
+                <div class="section-header">
+                    <div class="section-icon orange">📁</div>
+                    <h2>数据集格式</h2>
+                </div>
+                
+                <p>
+                    本模块使用 PyTorch 标准的 ImageFolder 格式组织数据集。这是最通用且易于理解的图像分类数据集组织方式，
+                    只需将图片按类别放入不同的文件夹即可，无需额外的标注文件。
+                </p>
+
+                <h3>目录结构规范</h3>
+                
+                <h4>方式一：单一数据集（自动划分验证集）</h4>
+                <p>如果您只有一个数据集，系统会自动按照设定的比例（默认 20%）划分训练集和验证集：</p>
+                <div class="file-tree"><span class="folder">my_dataset/</span>                    <span class="comment"># ← 在界面中指向此目录</span>
+├── <span class="folder">class_A/</span>                    <span class="comment"># 类别A（如：合格品）</span>
+│   ├── <span class="file">image_001.jpg</span>
+│   ├── <span class="file">image_002.jpg</span>
+│   ├── <span class="file">image_003.png</span>
+│   └── <span class="file">...</span>                     <span class="comment"># 支持子文件夹，会递归扫描</span>
+├── <span class="folder">class_B/</span>                    <span class="comment"># 类别B（如：缺陷品）</span>
+│   ├── <span class="file">sample_001.jpg</span>
+│   ├── <span class="file">sample_002.jpeg</span>
+│   └── <span class="file">...</span>
+├── <span class="folder">class_C/</span>                    <span class="comment"># 类别C</span>
+│   └── <span class="file">...</span>
+└── <span class="folder">class_D/</span>                    <span class="comment"># 可以有任意多个类别</span>
+    └── <span class="file">...</span></div>
+
+                <h4>方式二：预先划分训练/验证集</h4>
+                <p>如果您已经手动划分了训练集和验证集，可以使用以下结构：</p>
+                <div class="file-tree"><span class="folder">my_dataset/</span>
+├── <span class="folder">train/</span>                      <span class="comment"># ← 在界面中指向此目录</span>
+│   ├── <span class="folder">class_A/</span>
+│   │   ├── <span class="file">train_001.jpg</span>
+│   │   └── <span class="file">...</span>
+│   ├── <span class="folder">class_B/</span>
+│   │   └── <span class="file">...</span>
+│   └── <span class="folder">class_C/</span>
+│       └── <span class="file">...</span>
+│
+└── <span class="folder">val/</span>                        <span class="comment"># 系统会自动检测同级的 val 目录</span>
+    ├── <span class="folder">class_A/</span>
+    │   └── <span class="file">...</span>
+    ├── <span class="folder">class_B/</span>
+    │   └── <span class="file">...</span>
+    └── <span class="folder">class_C/</span>
+        └── <span class="file">...</span></div>
+
+                <div class="tip info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <div class="tip-title">自动检测验证集</div>
+                        <div class="tip-text">
+                            当您指向 <code>train</code> 目录时，系统会自动检测同级目录下是否存在 <code>val</code> 或 <code>valid</code> 或 <code>validation</code> 目录。
+                            如果存在，将使用该目录作为验证集；否则将从训练数据中自动划分。
+                        </div>
+                    </div>
+                </div>
+
+                <h3>支持的图片格式</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>格式</th><th>扩展名</th><th>特点</th><th>推荐场景</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>JPEG</strong></td><td>.jpg, .jpeg</td><td>有损压缩，文件小</td><td>通用场景，网络图片</td></tr>
+                            <tr><td><strong>PNG</strong></td><td>.png</td><td>无损压缩，支持透明</td><td>需要保留细节，有透明通道</td></tr>
+                            <tr><td><strong>BMP</strong></td><td>.bmp</td><td>无压缩，文件大</td><td>工业相机原始输出</td></tr>
+                            <tr><td><strong>WebP</strong></td><td>.webp</td><td>现代格式，压缩效率高</td><td>网络图片，新项目</td></tr>
+                            <tr><td><strong>TIFF</strong></td><td>.tif, .tiff</td><td>无损，支持多页</td><td>医疗影像，专业摄影</td></tr>
+                            <tr><td><strong>GIF</strong></td><td>.gif</td><td>仅读取第一帧</td><td>不推荐用于训练</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>类别命名规范</h3>
+                <ul>
+                    <li><strong>文件夹名 = 类别名</strong>：系统将文件夹名称作为类别标签</li>
+                    <li><strong>自动排序</strong>：类别按文件夹名的字母/数字顺序排序，依次分配索引（0, 1, 2...）</li>
+                    <li><strong>字符支持</strong>：支持中文、英文、数字和下划线</li>
+                    <li><strong>避免特殊字符</strong>：不要使用 <code>/ \ : * ? " &lt; &gt; |</code> 等特殊字符</li>
+                    <li><strong>大小写敏感</strong>：<code>Cat</code> 和 <code>cat</code> 会被视为不同类别</li>
+                </ul>
+
+                <h4>类别顺序控制</h4>
+                <p>如果需要固定类别顺序，可以在文件夹名前添加数字前缀：</p>
+                <div class="file-tree"><span class="folder">dataset/</span>
+├── <span class="folder">00_background/</span>             <span class="comment"># 索引 0</span>
+├── <span class="folder">01_defect_scratch/</span>         <span class="comment"># 索引 1</span>
+├── <span class="folder">02_defect_stain/</span>           <span class="comment"># 索引 2</span>
+├── <span class="folder">03_defect_crack/</span>           <span class="comment"># 索引 3</span>
+└── <span class="folder">04_normal/</span>                 <span class="comment"># 索引 4</span></div>
+
+                <h3>数据集验证</h3>
+                <p>在开始训练前，系统会自动验证数据集并显示统计信息：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">验证结果示例</span></div>
+                    <pre><code>✅ 数据集验证通过
+
+📊 数据集统计:
+   路径: /data/my_dataset
+   类别数: 5
+   总图片数: 2,500
+
+📁 各类别分布:
+   00_background:      500 张 (20.0%)
+   01_defect_scratch:  450 张 (18.0%)
+   02_defect_stain:    480 张 (19.2%)
+   03_defect_crack:    520 张 (20.8%)
+   04_normal:          550 张 (22.0%)
+
+⚠️ 提示:
+   - 类别分布较为均衡
+   - 建议验证集比例: 20%</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+            <!-- 数据处理技巧 -->
+            <section class="section" id="data-tips">
+                <div class="section-header">
+                    <div class="section-icon green">💡</div>
+                    <h2>数据处理技巧</h2>
+                </div>
+
+                <h3>数据量建议</h3>
+                <p>数据量是影响模型效果的关键因素。以下是不同场景的数据量建议：</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>场景</th><th>每类最少</th><th>推荐数量</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>快速验证</strong></td><td>10 张</td><td>50+ 张</td><td>仅用于测试流程是否正常，不追求效果</td></tr>
+                            <tr><td><strong>小样本学习</strong></td><td>50 张</td><td>200+ 张</td><td>依赖预训练权重迁移学习，适合数据稀缺场景</td></tr>
+                            <tr><td><strong>标准训练</strong></td><td>200 张</td><td>500-1000 张</td><td>可获得较好的分类效果</td></tr>
+                            <tr><td><strong>高精度需求</strong></td><td>1000 张</td><td>5000+ 张</td><td>工业级应用推荐，追求高准确率</td></tr>
+                            <tr><td><strong>大规模训练</strong></td><td>5000 张</td><td>10000+ 张</td><td>复杂分类任务，如细粒度分类</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>数据质量检查清单</h3>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">✓</div>
+                            <div class="card-title">良好的数据特征</div>
+                        </div>
+                        <ul>
+                            <li>图片清晰，目标可辨认</li>
+                            <li>各类别样本数量相对均衡</li>
+                            <li>覆盖不同光照、角度、背景</li>
+                            <li>标注准确，无错误分类</li>
+                            <li>与实际应用场景相符</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(239,68,68,0.1);">✗</div>
+                            <div class="card-title">需要避免的问题</div>
+                        </div>
+                        <ul>
+                            <li>图片模糊、过曝、欠曝</li>
+                            <li>类别严重不平衡（如 1:100）</li>
+                            <li>存在重复图片</li>
+                            <li>标注错误或模糊</li>
+                            <li>训练/测试数据分布不一致</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>类别不平衡处理</h3>
+                <p>当各类别样本数量差异较大时（如正常:缺陷 = 100:1），会影响模型训练效果。以下是常用的解决方案：</p>
+                
+                <h4>1. 数据层面</h4>
+                <ul>
+                    <li><strong>过采样（Oversampling）</strong>：复制少数类样本，或使用 SMOTE 等方法生成新样本</li>
+                    <li><strong>欠采样（Undersampling）</strong>：减少多数类样本数量，适合数据量充足的场景</li>
+                    <li><strong>数据增强</strong>：对少数类使用更多的数据增强策略</li>
+                    <li><strong>收集更多数据</strong>：最根本的解决方案</li>
+                </ul>
+
+                <h4>2. 算法层面</h4>
+                <ul>
+                    <li><strong>加权采样</strong>：训练时对少数类样本赋予更高的采样概率</li>
+                    <li><strong>类别加权损失</strong>：在损失函数中对少数类赋予更高的权重</li>
+                    <li><strong>Focal Loss</strong>：自动降低易分类样本的权重，关注难分类样本</li>
+                </ul>
+
+                <div class="tip warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <div class="tip-title">验证集注意事项</div>
+                        <div class="tip-text">
+                            验证集应保持与实际应用场景相似的数据分布，<strong>不建议</strong>在验证集上进行数据增强或重采样。
+                            验证集的目的是评估模型在真实场景中的表现，过度处理会导致评估结果失真。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 数据增强详解 -->
+            <section class="section" id="data-augment">
+                <div class="section-header">
+                    <div class="section-icon purple">🎨</div>
+                    <h2>数据增强详解</h2>
+                </div>
+
+                <p>
+                    数据增强是提升模型泛化能力的重要手段，通过对训练图片进行各种变换，
+                    模拟不同的拍摄条件和场景变化，让模型学习到更加鲁棒的特征。
+                </p>
+
+                <h3>基础增强（默认启用）</h3>
+                <p>以下增强策略默认开启，适用于大多数场景：</p>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">🔄</div>
+                            <div class="card-title">几何变换</div>
+                        </div>
+                        <ul>
+                            <li><strong>随机水平翻转</strong>：50% 概率左右翻转</li>
+                            <li><strong>随机裁剪</strong>：随机裁剪后缩放到目标尺寸</li>
+                            <li><strong>随机旋转</strong>：±15° 范围内随机旋转</li>
+                            <li><strong>随机缩放</strong>：0.8-1.2 倍随机缩放</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-purple-dim);">🎨</div>
+                            <div class="card-title">颜色变换</div>
+                        </div>
+                        <ul>
+                            <li><strong>亮度调整</strong>：±20% 亮度变化</li>
+                            <li><strong>对比度调整</strong>：±20% 对比度变化</li>
+                            <li><strong>饱和度调整</strong>：±20% 饱和度变化</li>
+                            <li><strong>色相偏移</strong>：±10% 色相变化</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>高级增强（可选）</h3>
+                <p>以下增强策略可在训练参数中开启，适用于数据量较少或需要提高鲁棒性的场景：</p>
+
+                <h4>MixUp 数据增强</h4>
+                <p>将两张图片按一定比例混合，同时混合它们的标签：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">原理说明</span></div>
+                    <pre><code># MixUp 公式
+mixed_image = λ * image_A + (1-λ) * image_B
+mixed_label = λ * label_A + (1-λ) * label_B
+
+# 其中 λ 从 Beta(α, α) 分布中采样，α 通常设为 0.2 或 1.0
+# 例如：λ=0.7 时，新图片包含 70% 的图片A 和 30% 的图片B</code></pre>
+                </div>
+
+                <h4>CutMix 数据增强</h4>
+                <p>将一张图片的矩形区域替换为另一张图片的对应区域：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">原理说明</span></div>
+                    <pre><code># CutMix 操作
+1. 随机选择一个矩形区域的位置和大小
+2. 将图片A中该区域替换为图片B的相同区域
+3. 标签按照替换面积比例混合
+
+# 优势：保留了更多的局部特征信息
+# 相比 MixUp，CutMix 在很多任务上效果更好</code></pre>
+                </div>
+
+                <h4>RandAugment</h4>
+                <p>从一组预定义的增强操作中随机选择 N 个操作，每个操作使用相同的强度 M：</p>
+                <ul>
+                    <li>操作集合包括：旋转、平移、剪切、亮度、对比度、锐化、Posterize、Solarize 等</li>
+                    <li>参数简单：只需调整 N（操作数量）和 M（操作强度）</li>
+                    <li>通常设置 N=2, M=9 效果较好</li>
+                </ul>
+
+                <h3>增强策略选择建议</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>场景</th><th>推荐策略</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>数据充足（>5000/类）</td><td>基础增强</td><td>数据量足够，过度增强可能降低效果</td></tr>
+                            <tr><td>数据适中（1000-5000/类）</td><td>基础增强 + MixUp</td><td>适度增强提升泛化能力</td></tr>
+                            <tr><td>数据较少（<1000/类）</td><td>基础增强 + CutMix + RandAugment</td><td>强增强弥补数据不足</td></tr>
+                            <tr><td>医疗/遥感等专业领域</td><td>领域特定增强</td><td>需要根据具体任务定制</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 支持的模型 -->
+            <section class="section" id="models">
+                <div class="section-header">
+                    <div class="section-icon blue">🧠</div>
+                    <h2>支持的模型</h2>
+                </div>
+
+                <p>
+                    本模块精选了 15 个经过验证的预训练模型，涵盖从移动端到服务器的不同部署场景。
+                    所有模型均在 ImageNet-1K（128万张图片，1000类）上预训练，
+                    并提供 Top-1 准确率作为参考。实际效果取决于您的具体任务和数据。
+                </p>
+
+                <h3>EfficientNet 系列</h3>
+                <p>
+                    Google 于 2019 年提出的高效网络架构，通过神经架构搜索（NAS）和复合缩放策略，
+                    在相同计算量下实现了比传统网络更高的精度。<strong>推荐作为首选模型系列。</strong>
+                </p>
+                <div class="grid grid-2">
+                    <div class="model-card"><div class="model-icon">🎯</div><div class="model-info"><div class="model-name">EfficientNet-B0</div><div class="model-meta">5.3M 参数 · 77.1% Top-1 · 224×224 输入</div></div><div class="model-badge lightweight">轻量</div></div>
+                    <div class="model-card"><div class="model-icon">🎯</div><div class="model-info"><div class="model-name">EfficientNet-B1</div><div class="model-meta">7.8M 参数 · 79.1% Top-1 · 240×240 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">⭐</div><div class="model-info"><div class="model-name">EfficientNet-B2</div><div class="model-meta">9.2M 参数 · 80.1% Top-1 · 260×260 输入</div></div><div class="model-badge recommended">推荐</div></div>
+                    <div class="model-card"><div class="model-icon">🎯</div><div class="model-info"><div class="model-name">EfficientNet-B3</div><div class="model-meta">12.0M 参数 · 81.6% Top-1 · 300×300 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">🎯</div><div class="model-info"><div class="model-name">EfficientNet-B4</div><div class="model-meta">19.0M 参数 · 82.9% Top-1 · 380×380 输入</div></div><div class="model-badge heavy">高显存</div></div>
+                </div>
+
+                <h3>MobileNet 系列</h3>
+                <p>
+                    Google 为移动设备和嵌入式设备优化的轻量级网络，使用深度可分离卷积大幅减少计算量。
+                    <strong>适合边缘部署和实时推理场景。</strong>
+                </p>
+                <div class="grid grid-2">
+                    <div class="model-card"><div class="model-icon">📱</div><div class="model-info"><div class="model-name">MobileNetV3-Small-050</div><div class="model-meta">1.6M 参数 · 57.9% Top-1 · 224×224 输入</div></div><div class="model-badge lightweight">极轻量</div></div>
+                    <div class="model-card"><div class="model-icon">📱</div><div class="model-info"><div class="model-name">MobileNetV3-Small-100</div><div class="model-meta">2.5M 参数 · 67.4% Top-1 · 224×224 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">📱</div><div class="model-info"><div class="model-name">MobileNetV2-100</div><div class="model-meta">3.5M 参数 · 72.0% Top-1 · 224×224 输入</div></div><div class="model-badge recommended">移动端推荐</div></div>
+                    <div class="model-card"><div class="model-icon">📱</div><div class="model-info"><div class="model-name">MobileNetV3-Large-100</div><div class="model-meta">5.4M 参数 · 75.2% Top-1 · 224×224 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">📱</div><div class="model-info"><div class="model-name">TF-MobileNetV3-Large</div><div class="model-meta">5.4M 参数 · 75.5% Top-1 · 224×224 输入</div></div></div>
+                </div>
+
+                <h3>ResNet 系列</h3>
+                <p>
+                    微软于 2015 年提出的残差网络，通过跳跃连接解决了深层网络的退化问题，
+                    是最经典和广泛使用的网络架构之一。<strong>稳定可靠，适合作为基准模型。</strong>
+                </p>
+                <div class="grid grid-2">
+                    <div class="model-card"><div class="model-icon">🏛️</div><div class="model-info"><div class="model-name">ResNet-18</div><div class="model-meta">11.7M 参数 · 69.8% Top-1 · 224×224 输入</div></div><div class="model-badge lightweight">快速训练</div></div>
+                    <div class="model-card"><div class="model-icon">🏛️</div><div class="model-info"><div class="model-name">ResNet-34</div><div class="model-meta">21.8M 参数 · 73.3% Top-1 · 224×224 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">⭐</div><div class="model-info"><div class="model-name">ResNet-50</div><div class="model-meta">25.6M 参数 · 80.4% Top-1 · 224×224 输入</div></div><div class="model-badge recommended">经典推荐</div></div>
+                    <div class="model-card"><div class="model-icon">🏛️</div><div class="model-info"><div class="model-name">Wide-ResNet-50-2</div><div class="model-meta">68.9M 参数 · 81.5% Top-1 · 224×224 输入</div></div></div>
+                    <div class="model-card"><div class="model-icon">🏛️</div><div class="model-info"><div class="model-name">Wide-ResNet-101-2</div><div class="model-meta">126.9M 参数 · 82.5% Top-1 · 224×224 输入</div></div><div class="model-badge heavy">高精度</div></div>
+                </div>
+
+                <h3>模型选择指南</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>部署场景</th><th>推荐模型</th><th>显存需求</th><th>推理速度</th><th>精度水平</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>嵌入式/MCU</strong></td><td>MobileNetV3-Small</td><td>&lt;1GB</td><td>极快 (&lt;5ms)</td><td>一般</td></tr>
+                            <tr><td><strong>移动端 App</strong></td><td>MobileNetV2/V3-Large</td><td>1-2GB</td><td>快 (5-10ms)</td><td>较好</td></tr>
+                            <tr><td><strong>边缘计算</strong></td><td>EfficientNet-B0/B1</td><td>2-4GB</td><td>较快 (10-20ms)</td><td>好</td></tr>
+                            <tr><td><strong>服务器（平衡）</strong></td><td>EfficientNet-B2 / ResNet-50</td><td>4-6GB</td><td>中等 (20-40ms)</td><td>很好</td></tr>
+                            <tr><td><strong>服务器（高精度）</strong></td><td>EfficientNet-B4 / WideResNet</td><td>8GB+</td><td>较慢 (40-80ms)</td><td>最佳</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tip success">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <div class="tip-title">选择建议</div>
+                        <div class="tip-text">
+                            对于大多数场景，我们推荐从 <strong>EfficientNet-B2</strong> 开始。它在精度和效率之间取得了很好的平衡，
+                            参数量适中（9.2M），训练速度快，且在各种任务上都有不错的表现。如果精度不满足需求，再考虑升级到更大的模型。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 训练参数详解 -->
+            <section class="section" id="training-params">
+                <div class="section-header">
+                    <div class="section-icon orange">⚙️</div>
+                    <h2>训练参数详解</h2>
+                </div>
+                <p>合理的参数设置对训练效果至关重要。</p>
+                <h3>数据相关参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>参数名</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="param-name">data_path</span></td><td>str</td><td><span class="tag required">必填</span></td><td>数据集根目录路径</td></tr>
+                            <tr><td><span class="param-name">img_size</span></td><td>int</td><td>224</td><td>输入图像尺寸</td></tr>
+                            <tr><td><span class="param-name">val_split</span></td><td>float</td><td>0.2</td><td>验证集比例</td></tr>
+                            <tr><td><span class="param-name">num_workers</span></td><td>int</td><td>4</td><td>数据加载线程数</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>训练超参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>参数名</th><th>类型</th><th>默认值</th><th>说明</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="param-name">epochs</span></td><td>int</td><td>50</td><td>训练轮数</td></tr>
+                            <tr><td><span class="param-name">batch_size</span></td><td>int</td><td>32</td><td>批次大小</td></tr>
+                            <tr><td><span class="param-name">learning_rate</span></td><td>float</td><td>0.001</td><td>初始学习率</td></tr>
+                            <tr><td><span class="param-name">optimizer</span></td><td>str</td><td>AdamW</td><td>优化器</td></tr>
+                            <tr><td><span class="param-name">early_stopping</span></td><td>bool</td><td>True</td><td>是否启用早停</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+            <section class="section" id="training-process">
+                <div class="section-header">
+                    <div class="section-icon green">▶️</div>
+                    <h2>训练流程</h2>
+                </div>
+
+                <h3>完整训练流程图</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">流程图</span></div>
+                    <pre><code>┌─────────────────────────────────────────────────────────────────────────────┐
+│                            训 练 完 整 流 程                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐         │
+│   │ 1.数据验证│────▶│ 2.模型加载│────▶│ 3.数据加载│────▶│ 4.训练循环│         │
+│   └──────────┘     └──────────┘     └──────────┘     └──────────┘         │
+│        │                │                │                │                │
+│        ▼                ▼                ▼                ▼                │
+│   ·检查路径格式     ·加载预训练权重   ·划分训练/验证集   ·每轮训练:          │
+│   ·统计类别数量     ·替换分类头       ·构建DataLoader    - 前向传播          │
+│   ·验证图片完整性   ·移动到GPU        ·应用数据增强      - 计算损失          │
+│   ·检查类别平衡     ·设置优化器                         - 反向传播          │
+│                                                         - 参数更新          │
+│                                                         - 验证评估          │
+│                                                                             │
+│   ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐         │
+│   │ 8.保存结果│◀────│ 7.训练结束│◀────│ 6.早停检查│◀────│ 5.保存最佳│         │
+│   └──────────┘     └──────────┘     └──────────┘     └──────────┘         │
+│        │                                                    │              │
+│        ▼                                                    ▼              │
+│   ·best_model.pth   (最佳验证准确率模型)          ·每轮检查是否为最佳       │
+│   ·last_model.pth   (最终模型)                    ·保存最佳模型             │
+│   ·config.yaml      (训练配置)                    ·更新最佳记录             │
+│   ·training.log     (训练日志)                                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘</code></pre>
+                </div>
+
+                <h3>训练日志详解</h3>
+                <p>训练过程中，系统会输出详细的日志信息，帮助您监控训练状态：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">训练日志示例</span></div>
+                    <pre><code>🖥️ 设备: cuda:0 (NVIDIA GeForce RTX 3080)
+🧠 模型: efficientnet_b2 (9.2M 参数)
+📊 类别数: 5
+📂 加载数据集...
+   ├─ 训练集: 2,000 样本
+   └─ 验证集: 500 样本
+🔧 初始化模型...
+   ├─ 预训练权重: ImageNet-1K
+   └─ 分类头: 1000 → 5
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 开始训练 (共 50 轮)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Epoch  1/50 | Train Loss: 1.4532 | Val Loss: 0.9876 | Val Acc: 68.40% | LR: 0.000200 | Time: 45.2s
+Epoch  2/50 | Train Loss: 0.8234 | Val Loss: 0.6543 | Val Acc: 78.20% | LR: 0.000400 | Time: 43.8s
+🎉 新的最佳模型! Acc: 78.20%
+Epoch  3/50 | Train Loss: 0.5678 | Val Loss: 0.4987 | Val Acc: 84.60% | LR: 0.000600 | Time: 44.1s
+🎉 新的最佳模型! Acc: 84.60%
+Epoch  4/50 | Train Loss: 0.4123 | Val Loss: 0.3876 | Val Acc: 88.20% | LR: 0.000800 | Time: 43.9s
+🎉 新的最佳模型! Acc: 88.20%
+Epoch  5/50 | Train Loss: 0.3245 | Val Loss: 0.3234 | Val Acc: 90.40% | LR: 0.001000 | Time: 44.0s
+🎉 新的最佳模型! Acc: 90.40%
+...
+Epoch 35/50 | Train Loss: 0.0456 | Val Loss: 0.1234 | Val Acc: 96.80% | LR: 0.000089 | Time: 43.7s
+🎉 新的最佳模型! Acc: 96.80%
+Epoch 36/50 | Train Loss: 0.0423 | Val Loss: 0.1256 | Val Acc: 96.60% | LR: 0.000072 | Time: 43.8s
+...
+Epoch 45/50 | Train Loss: 0.0312 | Val Loss: 0.1345 | Val Acc: 96.40% | LR: 0.000012 | Time: 43.6s
+⏹️ 早停触发: 连续 10 轮无改善
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ 训练完成!
+   最佳准确率: 96.80% (Epoch 35)
+   总用时: 32.8 分钟
+   输出目录: ./output/efficientnet_b2_20240115_103000
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code></pre>
+                </div>
+
+                <h3>关键指标解读</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>指标</th><th>含义</th><th>理想趋势</th><th>异常情况</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Train Loss</strong></td><td>训练集上的损失值</td><td>持续下降 ↓</td><td>震荡或上升可能是学习率过大</td></tr>
+                            <tr><td><strong>Val Loss</strong></td><td>验证集上的损失值</td><td>持续下降 ↓</td><td>上升而 Train Loss 下降说明过拟合</td></tr>
+                            <tr><td><strong>Val Acc</strong></td><td>验证集准确率</td><td>持续上升 ↑</td><td>停滞不前可能需要调整参数</td></tr>
+                            <tr><td><strong>LR</strong></td><td>当前学习率</td><td>预热后逐渐降低</td><td>-</td></tr>
+                            <tr><td><strong>Time</strong></td><td>单轮训练时间</td><td>相对稳定</td><td>突然变慢可能是内存不足</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tip warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <div class="tip-title">过拟合判断</div>
+                        <div class="tip-text">
+                            当 <strong>Train Loss 持续下降</strong> 但 <strong>Val Loss 开始上升</strong> 时，说明模型开始过拟合。
+                            此时应该：(1) 减小学习率；(2) 增加数据增强；(3) 使用更小的模型；(4) 增加 Dropout；(5) 收集更多数据。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 调参技巧 -->
+            <section class="section" id="training-tips">
+                <div class="section-header">
+                    <div class="section-icon purple">🎯</div>
+                    <h2>调参技巧</h2>
+                </div>
+
+                <h3>学习率调整</h3>
+                <p>学习率是最重要的超参数，直接影响训练效果和收敛速度。</p>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">📉</div>
+                            <div class="card-title">学习率过小的表现</div>
+                        </div>
+                        <ul>
+                            <li>Loss 下降非常缓慢</li>
+                            <li>训练曲线几乎是平直的</li>
+                            <li>需要大量 epochs 才能收敛</li>
+                            <li>最终效果可能不错，但效率低</li>
+                        </ul>
+                        <p><strong>解决方案：</strong>将学习率增大 2-10 倍</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(239,68,68,0.1);">📈</div>
+                            <div class="card-title">学习率过大的表现</div>
+                        </div>
+                        <ul>
+                            <li>Loss 剧烈震荡，无法稳定下降</li>
+                            <li>Loss 突然变成 NaN 或无穷大</li>
+                            <li>准确率上下波动，无法提升</li>
+                            <li>训练不稳定，难以复现</li>
+                        </ul>
+                        <p><strong>解决方案：</strong>将学习率减小 5-10 倍</p>
+                    </div>
+                </div>
+
+                <h3>Batch Size 与学习率的关系</h3>
+                <p>经验法则：<strong>Batch Size 翻倍时，学习率也应该相应增大</strong>（线性缩放规则）</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">参考配置</span></div>
+                    <pre><code># Batch Size 与学习率的推荐配置
+
+Batch Size 8   →  Learning Rate 0.00025
+Batch Size 16  →  Learning Rate 0.0005
+Batch Size 32  →  Learning Rate 0.001    # 基准配置
+Batch Size 64  →  Learning Rate 0.002
+Batch Size 128 →  Learning Rate 0.004
+Batch Size 256 →  Learning Rate 0.008
+
+# 注意：当 Batch Size 很大时（>256），线性缩放可能过于激进
+# 建议使用平方根缩放：lr = base_lr * sqrt(batch_size / 32)</code></pre>
+                </div>
+
+                <h3>常见问题诊断与解决</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th style="width:25%">问题现象</th><th style="width:30%">可能原因</th><th>解决方案</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>准确率卡在随机水平</strong><br>（如二分类卡在50%）</td>
+                                <td>学习率过大；数据标签错误；模型未正确加载</td>
+                                <td>1. 降低学习率 10 倍<br>2. 检查数据集标签<br>3. 确认预训练权重已加载</td>
+                            </tr>
+                            <tr>
+                                <td><strong>训练初期 Loss 爆炸</strong><br>（变成 NaN 或很大的值）</td>
+                                <td>学习率过大；数据未归一化；存在异常数据</td>
+                                <td>1. 大幅降低学习率<br>2. 检查数据预处理<br>3. 使用梯度裁剪</td>
+                            </tr>
+                            <tr>
+                                <td><strong>快速过拟合</strong><br>（几轮后 Val Loss 就上升）</td>
+                                <td>数据量太少；模型太大；正则化不足</td>
+                                <td>1. 增加数据增强<br>2. 使用更小的模型<br>3. 增加 Dropout 和 Weight Decay</td>
+                            </tr>
+                            <tr>
+                                <td><strong>验证准确率波动大</strong></td>
+                                <td>验证集太小；学习率不稳定；Batch Size 太小</td>
+                                <td>1. 增大验证集比例<br>2. 使用学习率预热<br>3. 增大 Batch Size</td>
+                            </tr>
+                            <tr>
+                                <td><strong>显存不足（OOM）</strong></td>
+                                <td>Batch Size 过大；模型太大；输入尺寸过大</td>
+                                <td>1. 减小 Batch Size<br>2. 使用更小的模型<br>3. 减小输入图像尺寸<br>4. 启用混合精度训练</td>
+                            </tr>
+                            <tr>
+                                <td><strong>训练速度很慢</strong></td>
+                                <td>数据加载瓶颈；CPU 占用过高</td>
+                                <td>1. 增加 num_workers<br>2. 使用 SSD 存储数据<br>3. 启用 pin_memory</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>不同数据规模的推荐配置</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>数据规模</th><th>推荐模型</th><th>Epochs</th><th>学习率</th><th>Batch Size</th><th>其他建议</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>&lt;500 张/类</strong></td><td>MobileNetV3</td><td>30-50</td><td>0.0001</td><td>16-32</td><td>强数据增强 + 早停</td></tr>
+                            <tr><td><strong>500-2000 张/类</strong></td><td>EfficientNet-B0/B1</td><td>50-80</td><td>0.0005</td><td>32</td><td>开启 MixUp</td></tr>
+                            <tr><td><strong>2000-5000 张/类</strong></td><td>EfficientNet-B2</td><td>80-100</td><td>0.001</td><td>32-64</td><td>标准配置</td></tr>
+                            <tr><td><strong>5000-10000 张/类</strong></td><td>EfficientNet-B2/B3</td><td>100-150</td><td>0.001</td><td>64</td><td>可减少增强</td></tr>
+                            <tr><td><strong>&gt;10000 张/类</strong></td><td>EfficientNet-B3/B4</td><td>100-200</td><td>0.001-0.002</td><td>64-128</td><td>可训练更长时间</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+            <!-- 检查点格式 -->
+            <section class="section" id="checkpoint-format">
+                <div class="section-header">
+                    <div class="section-icon blue">💾</div>
+                    <h2>检查点格式</h2>
+                </div>
+
+                <p>
+                    模型以 PyTorch 的 <code>.pth</code> 格式保存，包含完整的模型信息、训练状态和配置，
+                    可用于继续训练、推理预测和模型转换。我们精心设计了检查点格式，确保与主流推理框架兼容。
+                </p>
+
+                <h3>检查点完整结构</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">checkpoint = {
+    # ==================== 核心字段（推理必需）====================
+    'model': OrderedDict(...),         # 模型权重 state_dict
+    'framework': 'timm',               # 框架标识
+    'task': 'cls',                     # 任务类型：分类
+    'model_name': 'efficientnet_b2',   # TIMM 模型名称
+    'num_classes': 5,                  # 类别总数
+    'input_size': 260,                 # 输入图像尺寸 (H=W)
+    
+    # ==================== 类别映射（推理必需）====================
+    'class_to_idx': {                  # 类别名称 → 索引
+        'cat': 0,
+        'dog': 1,
+        'bird': 2,
+        'fish': 3,
+        'rabbit': 4
+    },
+    'idx_to_class': {                  # 索引 → 类别名称
+        0: 'cat',
+        1: 'dog',
+        2: 'bird',
+        3: 'fish',
+        4: 'rabbit'
+    },
+    'class_names': ['cat', 'dog', 'bird', 'fish', 'rabbit'],  # 类别列表
+    
+    # ==================== 预处理配置（推理必需）====================
+    'normalize_mean': (0.485, 0.456, 0.406),  # ImageNet 归一化均值
+    'normalize_std': (0.229, 0.224, 0.225),   # ImageNet 归一化标准差
+    'interpolation': 'bicubic',                # 图像缩放插值方式
+    
+    # ==================== 训练状态（用于续训）====================
+    'training_state': {
+        'epoch': 35,                           # 当前/最终训练轮数
+        'best_acc': 96.8,                      # 最佳验证准确率
+        'best_epoch': 35,                      # 最佳准确率对应的轮数
+        'optimizer_state_dict': {...},         # 优化器状态
+        'scheduler_state_dict': {...},         # 学习率调度器状态
+    },
+    
+    # ==================== 模型元数据 ====================
+    'model_metadata': {
+        'model_name': 'efficientnet_b2',
+        'model_family': 'EfficientNet',
+        'model_scale': '中',
+        'params_m': 9.2,                       # 参数量（百万）
+        'reference_acc': 80.1,                 # ImageNet 参考准确率
+        'input_size': (3, 260, 260),           # 完整输入形状
+        'mean': (0.485, 0.456, 0.406),
+        'std': (0.229, 0.224, 0.225),
+    },
+    
+    # ==================== 训练配置 ====================
+    'training_config': {
+        'data_path': '/data/my_dataset',
+        'batch_size': 32,
+        'epochs': 50,
+        'learning_rate': 0.001,
+        'optimizer': 'AdamW',
+        'scheduler': 'cosine',
+        'val_split': 0.2,
+        'use_mixup': False,
+        'use_cutmix': False,
+    },
+    
+    # ==================== 保存信息 ====================
+    'save_info': {
+        'timestamp': '2024-01-15 10:30:00',
+        'save_type': 'best',       # best / last / epoch_N / interrupted
+        'pytorch_version': '2.1.0',
+        'timm_version': '0.9.12',
+    },
+    
+    # ==================== 兼容性字段 ====================
+    'state_dict': OrderedDict(...),    # 兼容旧格式
+    'arch': 'efficientnet_b2',         # 兼容旧格式
+}</code></pre>
+                </div>
+
+                <h3>加载和使用检查点</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import torch
+import timm
+
+# 加载检查点
+checkpoint = torch.load('best_model.pth', map_location='cpu')
+
+# 提取关键信息
+model_name = checkpoint['model_name']           # 'efficientnet_b2'
+num_classes = checkpoint['num_classes']         # 5
+input_size = checkpoint['input_size']           # 260
+class_names = checkpoint['class_names']         # ['cat', 'dog', ...]
+idx_to_class = checkpoint['idx_to_class']       # {0: 'cat', ...}
+
+# 获取预处理参数
+mean = checkpoint['normalize_mean']             # (0.485, 0.456, 0.406)
+std = checkpoint['normalize_std']               # (0.229, 0.224, 0.225)
+
+# 创建模型并加载权重
+model = timm.create_model(model_name, num_classes=num_classes, pretrained=False)
+model.load_state_dict(checkpoint['model'])
+model.eval()
+
+print(f"模型: {model_name}")
+print(f"类别: {class_names}")
+print(f"输入尺寸: {input_size}x{input_size}")
+print(f"最佳准确率: {checkpoint['training_state']['best_acc']:.2f}%")</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 输出目录结构 -->
+            <section class="section" id="output-structure">
+                <div class="section-header">
+                    <div class="section-icon orange">📂</div>
+                    <h2>输出目录结构</h2>
+                </div>
+
+                <p>训练完成后，所有输出文件都组织在一个以「模型名_时间戳」命名的目录中：</p>
+
+                <div class="file-tree"><span class="folder">output/</span>
+└── <span class="folder">efficientnet_b2_20240115_103000/</span>     <span class="comment"># 模型名_年月日_时分秒</span>
+    │
+    ├── <span class="folder">checkpoints/</span>                        <span class="comment"># 模型检查点目录</span>
+    │   ├── <span class="file">best_model.pth</span>                  <span class="comment"># ⭐ 最佳验证准确率的模型（推荐使用）</span>
+    │   ├── <span class="file">last_model.pth</span>                  <span class="comment"># 最后一轮的模型</span>
+    │   ├── <span class="file">epoch_10.pth</span>                    <span class="comment"># 第10轮保存的检查点</span>
+    │   ├── <span class="file">epoch_20.pth</span>                    <span class="comment"># 第20轮保存的检查点</span>
+    │   └── <span class="file">interrupted_model.pth</span>           <span class="comment"># 中断时保存的模型（如有）</span>
+    │
+    ├── <span class="folder">logs/</span>                               <span class="comment"># 日志目录</span>
+    │   ├── <span class="file">training.log</span>                    <span class="comment"># 完整训练日志（文本格式）</span>
+    │   └── <span class="file">metrics.csv</span>                     <span class="comment"># 训练指标记录（CSV格式）</span>
+    │
+    ├── <span class="folder">converted/</span>                          <span class="comment"># 转换后的模型（如有）</span>
+    │   ├── <span class="file">model.onnx</span>                      <span class="comment"># ONNX 格式模型</span>
+    │   ├── <span class="file">model_fp16.engine</span>               <span class="comment"># TensorRT FP16 引擎</span>
+    │   ├── <span class="file">model_int8.engine</span>               <span class="comment"># TensorRT INT8 引擎</span>
+    │   └── <span class="folder">openvino/</span>                       <span class="comment"># OpenVINO 模型</span>
+    │       ├── <span class="file">model.xml</span>                   <span class="comment"># 模型结构</span>
+    │       └── <span class="file">model.bin</span>                   <span class="comment"># 模型权重</span>
+    │
+    └── <span class="file">config.yaml</span>                         <span class="comment"># 训练配置文件</span></div>
+
+                <h3>配置文件示例 (config.yaml)</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">yaml</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-yaml"># 训练配置记录 - 自动生成
+# 生成时间: 2024-01-15 10:30:00
+
+model:
+  name: efficientnet_b2
+  family: EfficientNet
+  scale: 中
+  num_classes: 5
+  input_size: 260
+  params_m: 9.2
+
+data:
+  path: /data/my_dataset
+  train_size: 2000
+  val_size: 500
+  val_split: 0.2
+  class_names:
+    - cat
+    - dog
+    - bird
+    - fish
+    - rabbit
+  class_distribution:
+    cat: 450
+    dog: 420
+    bird: 380
+    fish: 400
+    rabbit: 350
+
+training:
+  epochs: 50
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: AdamW
+  scheduler: cosine
+  warmup_epochs: 5
+  weight_decay: 0.01
+  early_stopping: true
+  patience: 10
+  use_mixup: false
+  use_cutmix: false
+
+hardware:
+  device: cuda:0
+  gpu_name: NVIDIA GeForce RTX 3080
+  mixed_precision: true
+  num_workers: 4
+
+results:
+  best_acc: 96.8
+  best_epoch: 35
+  final_epoch: 45
+  total_time_seconds: 1968.5
+  early_stopped: true</code></pre>
+                </div>
+
+                <h3>指标记录文件 (metrics.csv)</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">csv</span></div>
+                    <pre><code>epoch,train_loss,val_loss,val_acc,learning_rate,time
+1,1.4532,0.9876,68.40,0.000200,45.2
+2,0.8234,0.6543,78.20,0.000400,43.8
+3,0.5678,0.4987,84.60,0.000600,44.1
+4,0.4123,0.3876,88.20,0.000800,43.9
+5,0.3245,0.3234,90.40,0.001000,44.0
+...</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 模型转换概述 -->
+            <section class="section" id="conversion">
+                <div class="section-header">
+                    <div class="section-icon green">🔄</div>
+                    <h2>模型转换概述</h2>
+                </div>
+
+                <p>
+                    训练完成后，PyTorch 模型需要转换为优化的部署格式才能在生产环境中高效运行。
+                    本模块支持转换到多种主流推理后端，每种后端都有其特定的优势和适用场景。
+                </p>
+
+                <h3>支持的目标格式</h3>
+                <div class="grid grid-2">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-orange-dim);">📦</div>
+                        <div class="feature-title">ONNX (Open Neural Network Exchange)</div>
+                        <div class="feature-desc">
+                            开放神经网络交换格式，是模型转换的中间格式。
+                            几乎所有推理框架都支持 ONNX，是跨平台部署的首选。
+                            <ul style="margin-top:10px;color:var(--text-muted);">
+                                <li>跨平台、跨框架兼容</li>
+                                <li>可作为其他格式的转换源</li>
+                                <li>支持多种运行时优化</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">⚡</div>
+                        <div class="feature-title">TensorRT (NVIDIA)</div>
+                        <div class="feature-desc">
+                            NVIDIA 官方推理优化器，专为 NVIDIA GPU 设计。
+                            通过层融合、精度校准等技术实现极致性能。
+                            <ul style="margin-top:10px;color:var(--text-muted);">
+                                <li>NVIDIA GPU 上最快的推理速度</li>
+                                <li>支持 FP32/FP16/INT8 精度</li>
+                                <li>动态 Batch 支持</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">🔷</div>
+                        <div class="feature-title">OpenVINO (Intel)</div>
+                        <div class="feature-desc">
+                            Intel 推理优化工具包，针对 Intel CPU/GPU/VPU 优化。
+                            是边缘计算和 Intel 平台部署的首选。
+                            <ul style="margin-top:10px;color:var(--text-muted);">
+                                <li>Intel CPU 上性能优异</li>
+                                <li>支持 Intel 集成显卡</li>
+                                <li>支持 Neural Compute Stick</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">🟢</div>
+                        <div class="feature-title">ONNX Runtime</div>
+                        <div class="feature-desc">
+                            微软开源的高性能推理引擎，支持多种硬件后端。
+                            易于部署，跨平台兼容性好。
+                            <ul style="margin-top:10px;color:var(--text-muted);">
+                                <li>跨平台：Windows/Linux/macOS</li>
+                                <li>支持 CPU/GPU/NPU 等多种设备</li>
+                                <li>与 ONNX 格式无缝集成</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>精度选项对比</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>精度</th><th>模型大小</th><th>推理速度</th><th>精度损失</th><th>显存占用</th><th>适用场景</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>FP32</strong></td>
+                                <td>1x（基准）</td>
+                                <td>1x（基准）</td>
+                                <td>无</td>
+                                <td>1x</td>
+                                <td>开发调试、精度敏感场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FP16</strong></td>
+                                <td>0.5x</td>
+                                <td>1.5-2x</td>
+                                <td>极小（&lt;0.1%）</td>
+                                <td>0.5x</td>
+                                <td><strong>推荐</strong>：大多数部署场景</td>
+                            </tr>
+                            <tr>
+                                <td><strong>INT8</strong></td>
+                                <td>0.25x</td>
+                                <td>2-4x</td>
+                                <td>小（0.5-2%）</td>
+                                <td>0.25x</td>
+                                <td>边缘设备、极致速度需求</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mixed</strong></td>
+                                <td>0.3-0.4x</td>
+                                <td>2-3x</td>
+                                <td>较小</td>
+                                <td>0.3-0.4x</td>
+                                <td>平衡精度和速度</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tip info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <div class="tip-title">INT8 量化需要校准数据</div>
+                        <div class="tip-text">
+                            INT8 量化需要提供校准数据集来计算最佳量化参数。校准数据应该：
+                            <ul style="margin-top:8px;">
+                                <li>覆盖各个类别，具有代表性</li>
+                                <li>数量在 100-500 张之间</li>
+                                <li>可以使用训练集的子集</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>转换流程</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">转换流程图</span></div>
+                    <pre><code>                        ┌─────────────────┐
+                        │  PyTorch Model  │
+                        │   (.pth 文件)    │
+                        └────────┬────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │   ONNX Export   │
+                        │  (通用中间格式)  │
+                        └────────┬────────┘
+                                 │
+           ┌─────────────────────┼─────────────────────┐
+           │                     │                     │
+           ▼                     ▼                     ▼
+┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
+│    TensorRT     │   │    OpenVINO     │   │  ONNX Runtime   │
+│  (.engine 文件)  │   │ (.xml/.bin 文件) │   │   (.onnx 文件)   │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+        │                     │                     │
+        ▼                     ▼                     ▼
+   NVIDIA GPU           Intel CPU/GPU         跨平台部署
+   极致性能              边缘计算              通用场景</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+            <!-- ONNX导出 -->
+            <section class="section" id="onnx-export">
+                <div class="section-header">
+                    <div class="section-icon orange">📤</div>
+                    <h2>ONNX 导出</h2>
+                </div>
+
+                <p>
+                    ONNX（Open Neural Network Exchange）是一种开放的模型表示格式，
+                    几乎所有主流推理框架都支持。通常先将 PyTorch 模型导出为 ONNX，
+                    再转换为其他特定后端的格式。
+                </p>
+
+                <h3>导出参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="param-name">opset_version</span></td><td>17</td><td>ONNX 算子集版本，建议 13-17</td></tr>
+                            <tr><td><span class="param-name">dynamic_batch</span></td><td>False</td><td>是否启用动态 Batch Size</td></tr>
+                            <tr><td><span class="param-name">simplify</span></td><td>True</td><td>是否使用 onnx-simplifier 优化</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>导出代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import torch
+import timm
+
+# 加载训练好的模型
+checkpoint = torch.load('best_model.pth', map_location='cpu')
+model = timm.create_model(
+    checkpoint['model_name'], 
+    num_classes=checkpoint['num_classes'],
+    pretrained=False
+)
+model.load_state_dict(checkpoint['model'])
+model.eval()
+
+# 准备示例输入
+input_size = checkpoint['input_size']
+dummy_input = torch.randn(1, 3, input_size, input_size)
+
+# 导出 ONNX
+torch.onnx.export(
+    model,
+    dummy_input,
+    'model.onnx',
+    opset_version=17,
+    input_names=['input'],
+    output_names=['output'],
+    dynamic_axes={
+        'input': {0: 'batch_size'},
+        'output': {0: 'batch_size'}
+    } if dynamic_batch else None
+)
+
+print("✅ ONNX 导出完成: model.onnx")</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- TensorRT -->
+            <section class="section" id="tensorrt">
+                <div class="section-header">
+                    <div class="section-icon green">⚡</div>
+                    <h2>TensorRT 转换</h2>
+                </div>
+
+                <p>
+                    TensorRT 是 NVIDIA 的深度学习推理优化器和运行时，通过层融合、
+                    内核自动调优、精度校准等技术，在 NVIDIA GPU 上实现最佳推理性能。
+                </p>
+
+                <h3>转换参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="param-name">precision</span></td><td>FP16</td><td>推理精度：FP32 / FP16 / INT8 / Mixed</td></tr>
+                            <tr><td><span class="param-name">workspace_gb</span></td><td>4</td><td>GPU 工作空间大小（GB），越大优化越好</td></tr>
+                            <tr><td><span class="param-name">dynamic_batch</span></td><td>False</td><td>是否启用动态 Batch Size</td></tr>
+                            <tr><td><span class="param-name">min_batch</span></td><td>1</td><td>最小 Batch Size</td></tr>
+                            <tr><td><span class="param-name">opt_batch</span></td><td>4</td><td>最优 Batch Size（用于优化）</td></tr>
+                            <tr><td><span class="param-name">max_batch</span></td><td>16</td><td>最大 Batch Size</td></tr>
+                            <tr><td><span class="param-name">calib_data</span></td><td>-</td><td>INT8 校准数据路径（INT8精度必需）</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>输出文件说明</h3>
+                <div class="file-tree"><span class="folder">converted/</span>
+├── <span class="file">model_tensorrt_20240115.onnx</span>       <span class="comment"># 中间 ONNX 文件</span>
+├── <span class="file">model_tensorrt_fp16.engine</span>         <span class="comment"># TensorRT 引擎（主要部署文件）</span>
+└── <span class="file">model_tensorrt_fp16.yaml</span>           <span class="comment"># 推理配置（包含类别映射等）</span></div>
+
+                <h3>TensorRT 推理代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import tensorrt as trt
+import pycuda.driver as cuda
+import pycuda.autoinit
+import numpy as np
+from PIL import Image
+import yaml
+
+# 加载配置
+with open('model_tensorrt_fp16.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+
+input_size = config['input_size']
+mean = np.array(config['normalize_mean']).reshape(1, 3, 1, 1)
+std = np.array(config['normalize_std']).reshape(1, 3, 1, 1)
+class_names = config['class_names']
+
+# 加载 TensorRT 引擎
+logger = trt.Logger(trt.Logger.WARNING)
+with open('model_tensorrt_fp16.engine', 'rb') as f:
+    engine = trt.Runtime(logger).deserialize_cuda_engine(f.read())
+context = engine.create_execution_context()
+
+# 预处理函数
+def preprocess(image_path):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((input_size, input_size), Image.BICUBIC)
+    img = np.array(img).astype(np.float32) / 255.0
+    img = img.transpose(2, 0, 1)[np.newaxis, ...]  # HWC -> NCHW
+    img = (img - mean) / std
+    return img.astype(np.float32)
+
+# 推理函数
+def predict(image_path):
+    # 预处理
+    input_data = preprocess(image_path)
+    
+    # 分配 GPU 内存
+    d_input = cuda.mem_alloc(input_data.nbytes)
+    output = np.empty((1, len(class_names)), dtype=np.float32)
+    d_output = cuda.mem_alloc(output.nbytes)
+    
+    # 执行推理
+    cuda.memcpy_htod(d_input, input_data)
+    context.execute_v2([int(d_input), int(d_output)])
+    cuda.memcpy_dtoh(output, d_output)
+    
+    # 后处理
+    probs = np.exp(output) / np.exp(output).sum(axis=1, keepdims=True)
+    pred_idx = probs.argmax()
+    
+    return class_names[pred_idx], probs[0, pred_idx]
+
+# 使用示例
+label, confidence = predict('test.jpg')
+print(f'预测结果: {label}, 置信度: {confidence:.4f}')</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- OpenVINO -->
+            <section class="section" id="openvino">
+                <div class="section-header">
+                    <div class="section-icon blue">🔷</div>
+                    <h2>OpenVINO 转换</h2>
+                </div>
+
+                <p>
+                    OpenVINO（Open Visual Inference and Neural Network Optimization）是 Intel 开发的
+                    深度学习推理工具包，特别适合在 Intel CPU、集成 GPU 和 VPU 上进行高效推理。
+                </p>
+
+                <h3>转换参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="param-name">precision</span></td><td>FP16</td><td>推理精度：FP32 / FP16 / INT8</td></tr>
+                            <tr><td><span class="param-name">device</span></td><td>CPU</td><td>目标设备：CPU / GPU / VPU / AUTO</td></tr>
+                            <tr><td><span class="param-name">dynamic_batch</span></td><td>False</td><td>是否启用动态 Batch</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>输出文件说明</h3>
+                <div class="file-tree"><span class="folder">converted/openvino/</span>
+├── <span class="file">model.xml</span>                          <span class="comment"># 模型结构定义</span>
+├── <span class="file">model.bin</span>                          <span class="comment"># 模型权重数据</span>
+└── <span class="file">config.yaml</span>                        <span class="comment"># 推理配置文件</span></div>
+
+                <h3>OpenVINO 推理代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">from openvino.runtime import Core
+import numpy as np
+from PIL import Image
+import yaml
+
+# 加载配置
+with open('converted/openvino/config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+
+input_size = config['input_size']
+mean = np.array(config['normalize_mean']).reshape(1, 3, 1, 1)
+std = np.array(config['normalize_std']).reshape(1, 3, 1, 1)
+class_names = config['class_names']
+
+# 初始化 OpenVINO
+core = Core()
+model = core.read_model('converted/openvino/model.xml')
+compiled_model = core.compile_model(model, 'AUTO')  # 自动选择设备
+infer_request = compiled_model.create_infer_request()
+
+# 预处理
+def preprocess(image_path):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((input_size, input_size), Image.BICUBIC)
+    img = np.array(img).astype(np.float32) / 255.0
+    img = img.transpose(2, 0, 1)[np.newaxis, ...]
+    img = (img - mean) / std
+    return img.astype(np.float32)
+
+# 推理
+def predict(image_path):
+    input_data = preprocess(image_path)
+    infer_request.infer({0: input_data})
+    output = infer_request.get_output_tensor(0).data
+    
+    probs = np.exp(output) / np.exp(output).sum(axis=1, keepdims=True)
+    pred_idx = probs.argmax()
+    
+    return class_names[pred_idx], probs[0, pred_idx]
+
+# 使用
+label, confidence = predict('test.jpg')
+print(f'预测: {label}, 置信度: {confidence:.4f}')</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- ONNX Runtime -->
+            <section class="section" id="onnxruntime">
+                <div class="section-header">
+                    <div class="section-icon purple">🟢</div>
+                    <h2>ONNX Runtime</h2>
+                </div>
+
+                <p>
+                    ONNX Runtime 是微软开源的高性能推理引擎，支持多种硬件后端，
+                    具有良好的跨平台兼容性，是通用部署场景的优秀选择。
+                </p>
+
+                <h3>支持的执行提供者（Execution Providers）</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>Provider</th><th>硬件</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>CPUExecutionProvider</strong></td><td>CPU</td><td>默认提供者，跨平台支持</td></tr>
+                            <tr><td><strong>CUDAExecutionProvider</strong></td><td>NVIDIA GPU</td><td>GPU 加速推理</td></tr>
+                            <tr><td><strong>TensorrtExecutionProvider</strong></td><td>NVIDIA GPU</td><td>TensorRT 优化</td></tr>
+                            <tr><td><strong>OpenVINOExecutionProvider</strong></td><td>Intel 设备</td><td>Intel 优化</td></tr>
+                            <tr><td><strong>DirectMLExecutionProvider</strong></td><td>Windows GPU</td><td>Windows 平台 GPU</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>ONNX Runtime 推理代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import onnxruntime as ort
+import numpy as np
+from PIL import Image
+import yaml
+
+# 加载配置
+with open('model_config.yaml', 'r') as f:
+    config = yaml.safe_load(f)
+
+input_size = config['input_size']
+mean = np.array(config['normalize_mean']).reshape(1, 3, 1, 1)
+std = np.array(config['normalize_std']).reshape(1, 3, 1, 1)
+class_names = config['class_names']
+
+# 创建推理会话（自动选择最佳执行提供者）
+providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+session = ort.InferenceSession('model.onnx', providers=providers)
+input_name = session.get_inputs()[0].name
+output_name = session.get_outputs()[0].name
+
+print(f"使用设备: {session.get_providers()[0]}")
+
+# 预处理
+def preprocess(image_path):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((input_size, input_size), Image.BICUBIC)
+    img = np.array(img).astype(np.float32) / 255.0
+    img = img.transpose(2, 0, 1)[np.newaxis, ...]
+    img = (img - mean) / std
+    return img.astype(np.float32)
+
+# 推理
+def predict(image_path):
+    input_data = preprocess(image_path)
+    output = session.run([output_name], {input_name: input_data})[0]
+    
+    probs = np.exp(output) / np.exp(output).sum(axis=1, keepdims=True)
+    pred_idx = probs.argmax()
+    
+    return class_names[pred_idx], probs[0, pred_idx]
+
+# 批量推理
+def predict_batch(image_paths, batch_size=16):
+    results = []
+    for i in range(0, len(image_paths), batch_size):
+        batch_paths = image_paths[i:i+batch_size]
+        batch_inputs = np.vstack([preprocess(p) for p in batch_paths])
+        outputs = session.run([output_name], {input_name: batch_inputs})[0]
+        
+        probs = np.exp(outputs) / np.exp(outputs).sum(axis=1, keepdims=True)
+        for j, path in enumerate(batch_paths):
+            pred_idx = probs[j].argmax()
+            results.append({
+                'path': path,
+                'label': class_names[pred_idx],
+                'confidence': probs[j, pred_idx]
+            })
+    return results
+
+# 使用示例
+label, conf = predict('test.jpg')
+print(f'预测: {label}, 置信度: {conf:.4f}')</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 批量推理 -->
+            <section class="section" id="inference">
+                <div class="section-header">
+                    <div class="section-icon blue">🔍</div>
+                    <h2>批量推理</h2>
+                </div>
+                <p>批量推理功能可以对大量图片进行快速分类，结果保存为 CSV 文件。</p>
+                <h3>使用步骤</h3>
+                <ol>
+                    <li>切换到「推理」标签页</li>
+                    <li>选择训练好的模型文件（.pth）</li>
+                    <li>输入待推理的图片目录</li>
+                    <li>设置输出目录</li>
+                    <li>点击「开始推理」</li>
+                </ol>
+                <h3>输出结果</h3>
+                <div class="file-tree"><span class="folder">inference_output/</span>
+├── <span class="file">predictions.csv</span>      <span class="comment"># 预测结果</span>
+├── <span class="folder">cat/</span>                 <span class="comment"># 按类别整理</span>
+│   └── <span class="file">*.jpg</span>
+└── <span class="folder">dog/</span>
+    └── <span class="file">*.jpg</span></div>
+                <h3>CSV 格式</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">csv</span></div>
+                    <pre><code>image,prediction,confidence,class_idx
+/path/image_001.jpg,cat,0.9876,0
+/path/image_002.jpg,dog,0.9543,1</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- API接口 -->
+            <section class="section" id="api">
+                <div class="section-header">
+                    <div class="section-icon green">🔌</div>
+                    <h2>API 接口调用</h2>
+                </div>
+                <p>通过 Python 代码直接调用推理功能。</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import torch
+import timm
+from PIL import Image
+from torchvision import transforms
+
+# 加载模型
+checkpoint = torch.load('best_model.pth', map_location='cuda')
+model = timm.create_model(checkpoint['model_name'], 
+                          num_classes=checkpoint['num_classes'], 
+                          pretrained=False)
+model.load_state_dict(checkpoint['model'])
+model.cuda().eval()
+
+# 预处理
+input_size = checkpoint['input_size']
+transform = transforms.Compose([
+    transforms.Resize(int(input_size * 1.14)),
+    transforms.CenterCrop(input_size),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=checkpoint['normalize_mean'],
+                        std=checkpoint['normalize_std']),
+])
+
+# 推理
+def predict(image_path):
+    img = Image.open(image_path).convert('RGB')
+    tensor = transform(img).unsqueeze(0).cuda()
+    with torch.no_grad():
+        output = model(tensor)
+        probs = torch.softmax(output, dim=1)
+        idx = probs.argmax().item()
+    return checkpoint['idx_to_class'][idx], probs[0, idx].item()
+
+label, conf = predict('test.jpg')
+print(f'{label}: {conf:.4f}')</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 部署指南 -->
+            <section class="section" id="deployment">
+                <div class="section-header">
+                    <div class="section-icon orange">🚢</div>
+                    <h2>部署指南</h2>
+                </div>
+                <h3>部署方案选择</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>场景</th><th>推荐后端</th><th>硬件</th></tr></thead>
+                        <tbody>
+                            <tr><td>云服务 API</td><td>TensorRT</td><td>NVIDIA GPU</td></tr>
+                            <tr><td>边缘服务器</td><td>OpenVINO</td><td>Intel CPU</td></tr>
+                            <tr><td>嵌入式</td><td>TensorRT</td><td>Jetson</td></tr>
+                            <tr><td>桌面应用</td><td>ONNX Runtime</td><td>CPU/GPU</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h3>部署检查清单</h3>
+                <ul>
+                    <li>模型准确率满足要求</li>
+                    <li>已转换为目标格式</li>
+                    <li>推理速度满足延迟要求</li>
+                    <li>准备好配置文件和推理代码</li>
+                </ul>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 常见问题 -->
+            <section class="section" id="faq">
+                <div class="section-header">
+                    <div class="section-icon purple">❓</div>
+                    <h2>常见问题</h2>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">CUDA out of memory 错误</div></div>
+                    <p><strong>解决：</strong>减小 Batch Size、使用更小模型、减小图像尺寸、启用混合精度</p>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">准确率卡在随机水平</div></div>
+                    <p><strong>解决：</strong>降低学习率 10 倍、检查数据标签、确认预训练权重已加载</p>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">如何使用自己的数据集</div></div>
+                    <p>将图片按类别放入文件夹，然后输入文件夹路径即可。</p>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">训练过拟合</div></div>
+                    <p><strong>解决：</strong>增加数据增强、使用更小模型、增加 Dropout、收集更多数据</p>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 更新日志 -->
+            <section class="section" id="changelog">
+                <div class="section-header">
+                    <div class="section-icon green">📋</div>
+                    <h2>更新日志</h2>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-title">v2.0.1 (2026-01-30)</div></div>
+                    <ul><li>✨ 新增学习率预热</li><li>✨ 新增 CutMix/MixUp</li><li>🐛 修复中文路径问题</li></ul>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div class="card-title">v2.0.0 (2026-01-15)</div></div>
+                    <ul><li>🎉 集成 DL-Hub 平台</li><li>✨ 全新 Web 界面</li><li>✨ 多后端转换支持</li></ul>
+                </div>
+            </section>
+
+            <footer style="text-align: center; padding: 60px 0; border-top: 1px solid var(--border-color); margin-top: 60px;">
+                <p style="color: var(--text-primary);"><strong>DL-Hub 图像分类模块</strong> · 完整使用手册</p>
+                <p style="color: var(--text-muted); font-size: 13px;">© 2026 DL-Hub Team</p>
+            </footer>
+        </div>
+    </main>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
+    <script>
+        hljs.highlightAll();
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => { btn.textContent = '复制'; }, 2000);
+            });
+        }
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+        function updateActiveNav() {
+            let current = '';
+            sections.forEach(s => { if (window.scrollY >= s.offsetTop - 150) current = s.id; });
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        }
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            updateActiveNav();
+            backToTop.classList.toggle('visible', window.scrollY > 500);
+        });
+        navLinks.forEach(l => l.addEventListener('click', e => {
+            e.preventDefault();
+            const t = document.getElementById(l.getAttribute('href').slice(1));
+            if (t) t.scrollIntoView({ behavior: 'smooth' });
+        }));
+        updateActiveNav();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标检测模块 - 完整使用手册 | DL-Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-green-dim: rgba(16, 185, 129, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.1);
+            --accent-purple: #8b5cf6;
+            --accent-purple-dim: rgba(139, 92, 246, 0.1);
+            --accent-orange: #f59e0b;
+            --accent-orange-dim: rgba(245, 158, 11, 0.1);
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --accent-cyan-dim: rgba(6, 182, 212, 0.1);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #1a1f2e;
+            --sidebar-width: 280px;
+            --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; font-size: 16px; }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .sidebar-logo-text h1 { font-size: 17px; font-weight: 700; }
+        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
+        
+        .nav-section { margin-bottom: 6px; }
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+        .nav-link.active { background: var(--accent-orange-dim); color: var(--accent-orange); border-left-color: var(--accent-orange); }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Hero区域 */
+        .hero {
+            background: linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(239,68,68,0.12) 50%, rgba(139,92,246,0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 70px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '🎯';
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            opacity: 0.08;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-orange-dim);
+            border: 1px solid rgba(245,158,11,0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-orange);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 700px; line-height: 1.7; }
+        .hero-meta { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+        .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 内容区 */
+        .content {
+            max-width: 1400px;
+            padding: 60px 80px;
+            margin: 0 auto;
+        }
+        
+        /* 章节样式 */
+        .section { margin-bottom: 70px; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .section-icon.green { background: var(--accent-green-dim); }
+        .section-icon.blue { background: var(--accent-blue-dim); }
+        .section-icon.purple { background: var(--accent-purple-dim); }
+        .section-icon.orange { background: var(--accent-orange-dim); }
+        .section-icon.cyan { background: var(--accent-cyan-dim); }
+        
+        .section h2 { font-size: 30px; font-weight: 700; }
+        .section h3 { font-size: 22px; font-weight: 600; margin: 40px 0 18px; color: var(--text-primary); }
+        .section h4 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--text-primary); }
+        .section p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.9; }
+        .section ul, .section ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
+        .section li { margin-bottom: 10px; line-height: 1.8; }
+        .section strong { color: var(--text-primary); }
+        
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .card-title { font-size: 17px; font-weight: 600; }
+        
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th {
+            background: var(--bg-tertiary);
+            padding: 14px 18px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        
+        /* 代码块 */
+        .code-block {
+            position: relative;
+            margin: 24px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-lang { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .code-copy {
+            padding: 4px 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-copy:hover { background: var(--accent-orange-dim); border-color: var(--accent-orange); color: var(--accent-orange); }
+        .code-block pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            background: var(--code-bg) !important;
+            white-space: pre;
+        }
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            white-space: pre;
+        }
+        code:not([class*="language-"]) {
+            font-family: var(--font-mono);
+            font-size: 0.88em;
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            color: var(--accent-orange);
+        }
+        
+        /* 文件树 */
+        .file-tree {
+            background: var(--code-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.9;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .file-tree .folder { color: var(--accent-blue); font-weight: 500; }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); font-style: italic; }
+        
+        /* 提示框 */
+        .tip {
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin: 24px 0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .tip-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+        .tip-content { flex: 1; }
+        .tip-title { font-weight: 600; margin-bottom: 6px; font-size: 15px; }
+        .tip-text { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .tip.info { background: var(--accent-blue-dim); border: 1px solid rgba(59,130,246,0.3); }
+        .tip.info .tip-title { color: var(--accent-blue); }
+        .tip.success { background: var(--accent-green-dim); border: 1px solid rgba(16,185,129,0.3); }
+        .tip.success .tip-title { color: var(--accent-green); }
+        .tip.warning { background: var(--accent-orange-dim); border: 1px solid rgba(245,158,11,0.3); }
+        .tip.warning .tip-title { color: var(--accent-orange); }
+        .tip.danger { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+        .tip.danger .tip-title { color: var(--accent-red); }
+        
+        /* 网格 */
+        .grid { display: grid; gap: 20px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 1200px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+        
+        /* 特性卡片 */
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover { border-color: var(--accent-orange); transform: translateY(-3px); }
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 16px;
+        }
+        .feature-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+        .feature-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+        
+        /* 模型卡片 */
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.2s;
+        }
+        .model-card:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.02); }
+        .model-icon { font-size: 28px; flex-shrink: 0; }
+        .model-info { flex: 1; min-width: 0; }
+        .model-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .model-meta { font-size: 12px; color: var(--text-muted); }
+        .model-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .model-badge.recommended { background: var(--accent-green-dim); color: var(--accent-green); }
+        .model-badge.lightweight { background: var(--accent-blue-dim); color: var(--accent-blue); }
+        .model-badge.heavy { background: var(--accent-purple-dim); color: var(--accent-purple); }
+        .model-badge.sota { background: var(--accent-orange-dim); color: var(--accent-orange); }
+        
+        /* 步骤 */
+        .steps { position: relative; padding-left: 45px; }
+        .steps::before {
+            content: '';
+            position: absolute;
+            left: 17px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent-orange), var(--accent-purple));
+            border-radius: 2px;
+        }
+        .step { position: relative; margin-bottom: 35px; }
+        .step:last-child { margin-bottom: 0; }
+        .step-number {
+            position: absolute;
+            left: -45px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(245,158,11,0.3);
+        }
+        .step-title { font-size: 18px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary); }
+        .step-content { color: var(--text-secondary); }
+        .step-content p { margin-bottom: 12px; }
+        
+        /* 参数样式 */
+        .param-name { font-family: var(--font-mono); color: var(--accent-orange); font-weight: 500; }
+        .param-type { font-family: var(--font-mono); color: var(--accent-purple); font-size: 12px; }
+        .param-default { font-family: var(--font-mono); color: var(--accent-blue); font-size: 12px; }
+        .tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .tag.required { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+        .tag.optional { background: rgba(107,114,128,0.2); color: var(--text-muted); }
+        
+        /* 返回顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(245,158,11,0.4);
+        }
+        .back-to-top.visible { opacity: 1; visibility: visible; }
+        .back-to-top:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(245,158,11,0.5); }
+        
+        /* 分隔线 */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
+            margin: 50px 0;
+        }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+        
+        /* 响应式 */
+        @media (max-width: 1100px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; width: 100%; }
+            .content { padding: 40px 30px; }
+            .hero { padding: 50px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 侧边导航 -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <div class="sidebar-logo-icon">🎯</div>
+                <div class="sidebar-logo-text">
+                    <h1>目标检测</h1>
+                    <span>Detection Manual</span>
+                </div>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">快速开始</div>
+            <a href="#overview" class="nav-link active"><span>📖</span> 概述</a>
+            <a href="#quickstart" class="nav-link"><span>🚀</span> 快速入门</a>
+            <a href="#installation" class="nav-link"><span>📦</span> 环境配置</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">数据准备</div>
+            <a href="#data-format" class="nav-link"><span>📁</span> LabelMe标注格式</a>
+            <a href="#data-tips" class="nav-link"><span>💡</span> 数据标注技巧</a>
+            <a href="#data-conversion" class="nav-link"><span>🔄</span> 格式自动转换</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型训练</div>
+            <a href="#models" class="nav-link"><span>🧠</span> YOLO模型库</a>
+            <a href="#training-params" class="nav-link"><span>⚙️</span> 训练参数详解</a>
+            <a href="#training-process" class="nav-link"><span>▶️</span> 训练流程</a>
+            <a href="#training-tips" class="nav-link"><span>🎯</span> 调参技巧</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型输出</div>
+            <a href="#checkpoint-format" class="nav-link"><span>💾</span> 检查点格式</a>
+            <a href="#output-structure" class="nav-link"><span>📂</span> 输出目录结构</a>
+            <a href="#metrics" class="nav-link"><span>📊</span> 评估指标详解</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">模型转换</div>
+            <a href="#conversion" class="nav-link"><span>🔄</span> 转换概述</a>
+            <a href="#tensorrt" class="nav-link"><span>⚡</span> TensorRT转换</a>
+            <a href="#onnxruntime" class="nav-link"><span>🟢</span> ONNX Runtime</a>
+            <a href="#openvino" class="nav-link"><span>🔷</span> OpenVINO转换</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">推理与部署</div>
+            <a href="#inference" class="nav-link"><span>🔍</span> 批量推理</a>
+            <a href="#api" class="nav-link"><span>🔌</span> API接口调用</a>
+            <a href="#deployment" class="nav-link"><span>🚢</span> 部署指南</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">附录</div>
+            <a href="#faq" class="nav-link"><span>❓</span> 常见问题</a>
+            <a href="#changelog" class="nav-link"><span>📋</span> 更新日志</a>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- Hero -->
+        <div class="hero">
+            <div class="hero-badge"><span>📚</span><span>完整使用手册 v2.0</span></div>
+            <h1>目标检测模块</h1>
+            <p class="hero-subtitle">
+                基于 Ultralytics YOLO 框架构建的专业目标检测训练平台，支持 YOLOv5、YOLOv8、YOLOv11 三大系列共 15 个预训练模型，
+                涵盖从数据标注、模型训练、模型转换到生产部署的完整工作流程。无论是工业质检、智能安防还是自动驾驶场景，
+                都能快速构建高精度的目标检测系统。
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item"><span>🧠</span><span>15 个 YOLO 模型</span></div>
+                <div class="hero-meta-item"><span>⚡</span><span>TensorRT 加速</span></div>
+                <div class="hero-meta-item"><span>🎨</span><span>LabelMe 标注支持</span></div>
+                <div class="hero-meta-item"><span>📦</span><span>多后端部署</span></div>
+                <div class="hero-meta-item"><span>📊</span><span>实时训练监控</span></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- 概述 -->
+            <section class="section" id="overview">
+                <div class="section-header">
+                    <div class="section-icon orange">📖</div>
+                    <h2>概述</h2>
+                </div>
+                
+                <p>
+                    目标检测模块是 DL-Hub 深度学习平台的核心组件之一，专为工业级目标检测任务设计。
+                    该模块基于 Ultralytics YOLO 框架构建，集成了 YOLOv5、YOLOv8、YOLOv11 三大系列的预训练模型，
+                    涵盖从超轻量级边缘部署到高精度服务器推理的全场景需求。
+                </p>
+                
+                <p>
+                    本模块原生支持 LabelMe 标注格式，自动完成到 YOLO 格式的转换，无需手动处理数据格式问题。
+                    通过直观的 Web 界面，您可以轻松配置训练参数、监控训练进度（包括 Loss 曲线、mAP 曲线）、
+                    转换模型格式，并进行批量推理测试。
+                </p>
+
+                <h3>核心特性</h3>
+                <div class="grid grid-4">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-orange-dim);">🧠</div>
+                        <div class="feature-title">三代 YOLO 模型</div>
+                        <div class="feature-desc">支持 YOLOv5/v8/v11 三个系列共 15 个模型，从 1.9M 到 86.7M 参数量全覆盖</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">📝</div>
+                        <div class="feature-title">LabelMe 原生支持</div>
+                        <div class="feature-desc">直接使用 LabelMe 标注的 JSON 文件，系统自动转换为 YOLO 格式</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">📈</div>
+                        <div class="feature-title">实时训练监控</div>
+                        <div class="feature-desc">Loss 曲线、mAP 曲线实时更新，支持训练中断与恢复</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">⚡</div>
+                        <div class="feature-title">多后端转换</div>
+                        <div class="feature-desc">一键转换至 TensorRT、ONNX Runtime、OpenVINO，支持 INT8 量化</div>
+                    </div>
+                </div>
+
+                <h3>适用场景</h3>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-orange-dim);">🏭</div>
+                            <div class="card-title">工业质检</div>
+                        </div>
+                        <ul>
+                            <li>产品表面缺陷检测（划痕、凹坑、裂纹等）</li>
+                            <li>PCB 元器件检测与定位</li>
+                            <li>零部件完整性检查</li>
+                            <li>包装标签检测与验证</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">🚗</div>
+                            <div class="card-title">智能交通</div>
+                        </div>
+                        <ul>
+                            <li>车辆检测与车型识别</li>
+                            <li>行人检测与跟踪</li>
+                            <li>交通标志检测</li>
+                            <li>车牌检测与定位</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-purple-dim);">🛡️</div>
+                            <div class="card-title">智能安防</div>
+                        </div>
+                        <ul>
+                            <li>人员检测与计数</li>
+                            <li>异常行为检测</li>
+                            <li>物品遗留检测</li>
+                            <li>入侵检测报警</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">🏥</div>
+                            <div class="card-title">医疗影像</div>
+                        </div>
+                        <ul>
+                            <li>病灶区域检测</li>
+                            <li>细胞检测与计数</li>
+                            <li>医疗器械检测</li>
+                            <li>X光异物检测</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>技术架构</h3>
+                <p>本模块采用模块化设计，各组件职责清晰，易于扩展和维护：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">架构图</span></div>
+                    <pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                         目标检测模块架构                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐                 │
+│  │  Web UI层   │    │   API层     │    │   CLI层     │                 │
+│  │  (Gradio)   │    │  (Python)   │    │  (argparse) │                 │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘                 │
+│         │                  │                  │                         │
+│         └──────────────────┼──────────────────┘                         │
+│                            ▼                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        核心引擎层                                 │   │
+│  │  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐    │   │
+│  │  │ 数据转换器 │  │ 模型工厂  │  │ YOLO训练器│  │ 转换引擎  │    │   │
+│  │  │ Converter │  │ModelFactory│  │  Trainer  │  │ Converter │    │   │
+│  │  └───────────┘  └───────────┘  └───────────┘  └───────────┘    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                            │                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                        数据层                                     │   │
+│  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │   │
+│  │  │   LabelMe JSON  │  │   YOLO TXT      │  │   data.yaml     │  │   │
+│  │  │   (输入格式)    │  │   (内部格式)    │  │   (配置文件)    │  │   │
+│  │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 快速入门 -->
+            <section class="section" id="quickstart">
+                <div class="section-header">
+                    <div class="section-icon green">🚀</div>
+                    <h2>快速入门</h2>
+                </div>
+                
+                <p>
+                    本节将指导您在 10 分钟内完成第一个目标检测模型的训练。
+                    我们将使用一个简单的示例数据集来演示完整的工作流程。
+                </p>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-title">准备 LabelMe 标注数据</div>
+                        <div class="step-content">
+                            <p>使用 LabelMe 工具标注您的图像数据，确保：</p>
+                            <ul>
+                                <li>所有标注使用<strong>矩形框（Rectangle）</strong></li>
+                                <li>标签（Label）使用<strong>数字 ID</strong>，如 0, 1, 2, 3...</li>
+                                <li>图像文件夹和 JSON 文件夹可以相同或不同</li>
+                            </ul>
+                            <div class="file-tree"><span class="folder">my_dataset/</span>
+├── <span class="folder">images/</span>           <span class="comment"># 图像文件夹</span>
+│   ├── <span class="file">001.jpg</span>
+│   ├── <span class="file">002.jpg</span>
+│   └── <span class="file">...</span>
+└── <span class="folder">jsons/</span>            <span class="comment"># JSON标注文件夹</span>
+    ├── <span class="file">001.json</span>
+    ├── <span class="file">002.json</span>
+    └── <span class="file">...</span></div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">启动目标检测模块</div>
+                        <div class="step-content">
+                            <p>通过 DL-Hub 主界面或命令行启动：</p>
+                            <div class="code-block">
+                                <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                                <pre><code class="language-bash"># 方式一：通过 DL-Hub 主界面
+# 点击「目标检测」任务卡片，选择「启动应用」
+
+# 方式二：命令行启动
+cd model_image_detection
+python app.py --port 7860</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">配置训练参数</div>
+                        <div class="step-content">
+                            <p>在 Web 界面的「模型训练」标签页中进行以下配置：</p>
+                            <ol>
+                                <li><strong>图像文件夹路径</strong>：输入包含训练图像的文件夹路径</li>
+                                <li><strong>JSON 标注文件夹路径</strong>：输入包含 LabelMe JSON 标注的文件夹路径</li>
+                                <li><strong>模型选择</strong>：选择模型系列（推荐 YOLOv8）和规模（推荐「中」）</li>
+                                <li><strong>训练参数</strong>：首次使用可保持默认值：
+                                    <ul>
+                                        <li>训练轮数（Epochs）：建议 50-100 轮</li>
+                                        <li>批次大小（Batch Size）：根据显存调整，通常 8-16</li>
+                                        <li>学习率：默认 0.01，通常无需修改</li>
+                                        <li>图像尺寸：默认 640</li>
+                                    </ul>
+                                </li>
+                                <li><strong>GPU 选择</strong>：如有多张显卡，可选择指定 GPU</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">开始训练并监控</div>
+                        <div class="step-content">
+                            <p>点击「开始训练」按钮后，您可以实时监控训练进度：</p>
+                            <ul>
+                                <li><strong>训练日志</strong>：显示每个 epoch 的损失值、学习率等信息</li>
+                                <li><strong>Loss 曲线</strong>：实时绘制 Box Loss 和 Cls Loss 的变化趋势</li>
+                                <li><strong>mAP 曲线</strong>：展示 mAP@50 和 mAP@50:95 的提升过程</li>
+                                <li><strong>最佳模型</strong>：系统会自动保存验证 mAP 最高的模型</li>
+                            </ul>
+                            <p>训练过程中可以随时点击「停止训练」按钮安全中断，系统会保存当前检查点。</p>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-title">使用训练好的模型</div>
+                        <div class="step-content">
+                            <p>训练完成后，您可以：</p>
+                            <ul>
+                                <li><strong>批量推理</strong>：切换到「批量推理」标签页，对新图片进行目标检测</li>
+                                <li><strong>模型转换</strong>：切换到「模型转换」标签页，将模型转换为 TensorRT/ONNX 等部署格式</li>
+                                <li><strong>导出模型</strong>：在输出目录中找到 <code>best_model.pt</code> 和 <code>last_model.pt</code> 文件</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip success">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <div class="tip-title">快速验证建议</div>
+                        <div class="tip-text">
+                            首次使用时，建议选择较小的模型（如 YOLOv8n）和较少的训练轮数（如 10-20 轮），
+                            快速验证整个流程是否正常工作。确认无误后，再使用更大的模型和更多的训练轮数进行正式训练。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 环境配置 -->
+            <section class="section" id="installation">
+                <div class="section-header">
+                    <div class="section-icon purple">📦</div>
+                    <h2>环境配置</h2>
+                </div>
+                
+                <p>
+                    本节详细介绍如何配置运行环境。正确的环境配置是顺利训练的前提，
+                    请根据您的硬件条件选择合适的配置方案。
+                </p>
+
+                <h3>系统要求</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>组件</th><th>最低要求</th><th>推荐配置</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>操作系统</strong></td><td>Windows 10 / Ubuntu 18.04</td><td>Windows 11 / Ubuntu 22.04</td><td>支持 64 位系统</td></tr>
+                            <tr><td><strong>Python</strong></td><td>3.8</td><td>3.10 / 3.11</td><td>建议使用 Anaconda 管理</td></tr>
+                            <tr><td><strong>CUDA</strong></td><td>11.0（GPU训练）</td><td>11.8 / 12.1</td><td>CPU 训练无需 CUDA</td></tr>
+                            <tr><td><strong>GPU显存</strong></td><td>4GB（小模型）</td><td>8GB+（大模型）</td><td>YOLO 对显存需求较大</td></tr>
+                            <tr><td><strong>系统内存</strong></td><td>8GB</td><td>16GB+</td><td>影响数据加载和增强速度</td></tr>
+                            <tr><td><strong>硬盘空间</strong></td><td>20GB</td><td>50GB+ SSD</td><td>包含模型和数据集</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>推荐的 GPU 配置</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>GPU型号</th><th>显存</th><th>推荐 Batch Size</th><th>推荐模型规模</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>RTX 3060</td><td>12GB</td><td>8-16</td><td>YOLOv8n/s/m</td></tr>
+                            <tr><td>RTX 3070/4070</td><td>8-12GB</td><td>8-16</td><td>YOLOv8n/s/m</td></tr>
+                            <tr><td>RTX 3080/4080</td><td>10-16GB</td><td>16-32</td><td>YOLOv8m/l</td></tr>
+                            <tr><td>RTX 3090/4090</td><td>24GB</td><td>32-64</td><td>所有模型</td></tr>
+                            <tr><td>Tesla T4</td><td>16GB</td><td>16-32</td><td>YOLOv8m/l</td></tr>
+                            <tr><td>Tesla V100</td><td>16-32GB</td><td>32-64</td><td>所有模型</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>依赖包列表</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">requirements.txt</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code># ============ 核心依赖 ============
+torch>=2.0.0              # PyTorch 深度学习框架
+torchvision>=0.15.0       # 图像处理
+ultralytics>=8.0.0        # YOLO 官方框架
+gradio>=4.0.0             # Web UI 框架
+
+# ============ 数据处理 ============
+pillow>=9.0.0             # 图像读取和处理
+pyyaml>=6.0.0             # YAML 配置文件
+numpy>=1.24.0             # 数值计算
+pandas>=1.5.0             # 数据分析
+
+# ============ 可视化 ============
+matplotlib>=3.6.0         # 训练曲线绘制
+
+# ============ 模型转换（可选）============
+onnx>=1.14.0              # ONNX 格式支持
+onnxruntime>=1.15.0       # ONNX Runtime 推理
+onnxruntime-gpu>=1.15.0   # GPU 加速推理
+
+# ============ 高级转换（按需安装）============
+# tensorrt                # NVIDIA TensorRT（需单独安装）
+# openvino                # Intel OpenVINO（需单独安装）</code></pre>
+                </div>
+
+                <h3>安装步骤</h3>
+                <h4>步骤 1：创建 Conda 环境</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># 创建新的 Python 环境
+conda create -n dlhub python=3.10 -y
+
+# 激活环境
+conda activate dlhub
+
+# 验证 Python 版本
+python --version</code></pre>
+                </div>
+
+                <h4>步骤 2：安装 PyTorch</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># CUDA 11.8 版本（推荐）
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# CUDA 12.1 版本
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# CPU 版本（无 GPU）
+pip install torch torchvision torchaudio</code></pre>
+                </div>
+
+                <h4>步骤 3：安装 Ultralytics 和其他依赖</h4>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">bash</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-bash"># 安装 Ultralytics（包含 YOLOv5/v8/v11）
+pip install ultralytics
+
+# 安装其他依赖
+pip install gradio pillow pyyaml matplotlib pandas
+
+# 验证安装
+python -c "from ultralytics import YOLO; print('Ultralytics OK')"</code></pre>
+                </div>
+
+                <div class="tip info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <div class="tip-title">首次运行自动下载预训练权重</div>
+                        <div class="tip-text">
+                            首次使用某个模型时，系统会自动从 Ultralytics 官方源下载预训练权重。
+                            请确保网络畅通，或者提前手动下载权重文件到 <code>models/pretrained/</code> 目录。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- LabelMe标注格式 -->
+            <section class="section" id="data-format">
+                <div class="section-header">
+                    <div class="section-icon blue">📁</div>
+                    <h2>LabelMe 标注格式</h2>
+                </div>
+                
+                <p>
+                    本模块原生支持 LabelMe 标注工具生成的 JSON 格式，无需手动转换为 YOLO 格式。
+                    系统会在训练开始时自动完成格式转换。
+                </p>
+
+                <h3>目录结构要求</h3>
+                <p>您需要准备两个文件夹：一个包含图像，一个包含 JSON 标注文件。它们可以是同一个文件夹，也可以分开存放。</p>
+                <div class="file-tree"><span class="folder">dataset/</span>
+├── <span class="folder">images/</span>              <span class="comment"># 图像文件夹</span>
+│   ├── <span class="file">img_001.jpg</span>       <span class="comment"># 支持 jpg, jpeg, png, bmp, webp, tiff</span>
+│   ├── <span class="file">img_002.png</span>
+│   ├── <span class="file">img_003.jpg</span>       <span class="comment"># 这张图没有对应的JSON，将作为负样本</span>
+│   └── <span class="file">...</span>
+└── <span class="folder">annotations/</span>         <span class="comment"># JSON标注文件夹</span>
+    ├── <span class="file">img_001.json</span>      <span class="comment"># 文件名需与图像对应（不含扩展名）</span>
+    ├── <span class="file">img_002.json</span>
+    └── <span class="file">...</span></div>
+
+                <h3>JSON 文件格式</h3>
+                <p>每个 JSON 文件包含一张图像的所有标注信息：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">json</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-json">{
+  "version": "5.0.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "0",           // 类别ID（必须是数字字符串）
+      "points": [
+        [100.5, 200.3],       // 左上角坐标 [x1, y1]
+        [300.8, 450.6]        // 右下角坐标 [x2, y2]
+      ],
+      "group_id": null,
+      "shape_type": "rectangle",  // 必须是 rectangle
+      "flags": {}
+    },
+    {
+      "label": "1",           // 另一个目标，类别ID为1
+      "points": [
+        [50.0, 100.0],
+        [150.0, 200.0]
+      ],
+      "shape_type": "rectangle"
+    }
+  ],
+  "imagePath": "img_001.jpg",
+  "imageData": null,          // 建议设为 null 以减小文件体积
+  "imageHeight": 1080,        // 图像高度（像素）
+  "imageWidth": 1920          // 图像宽度（像素）
+}</code></pre>
+                </div>
+
+                <h3>标注规范</h3>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-orange-dim);">⚠️</div>
+                        <div class="card-title">关键要求</div>
+                    </div>
+                    <ul>
+                        <li><strong>标签必须是数字</strong>：类别 ID 使用 0, 1, 2, 3... 的数字字符串，不支持文字标签</li>
+                        <li><strong>只支持矩形框</strong>：<code>shape_type</code> 必须是 <code>"rectangle"</code>，多边形和其他形状会被忽略</li>
+                        <li><strong>坐标使用像素值</strong>：<code>points</code> 中的坐标是图像中的实际像素位置</li>
+                        <li><strong>类别 ID 连续性</strong>：建议使用从 0 开始的连续整数（0, 1, 2, 3...）</li>
+                    </ul>
+                </div>
+
+                <h3>负样本处理</h3>
+                <p>
+                    系统支持将没有对应 JSON 文件的图像作为<strong>负样本</strong>（也称为良品或背景样本）。
+                    这对于工业质检场景特别有用，可以帮助模型学习区分正常样品和缺陷样品。
+                </p>
+                <div class="tip success">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <div class="tip-title">负样本最佳实践</div>
+                        <div class="tip-text">
+                            建议负样本（无标注图像）占总样本的 10-30%。过多的负样本可能导致模型过于保守，
+                            而过少的负样本可能导致误检率上升。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 数据标注技巧 -->
+            <section class="section" id="data-tips">
+                <div class="section-header">
+                    <div class="section-icon cyan">💡</div>
+                    <h2>数据标注技巧</h2>
+                </div>
+
+                <h3>标注质量要求</h3>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">✅</div>
+                            <div class="card-title">正确的标注方式</div>
+                        </div>
+                        <ul>
+                            <li>边界框紧贴目标边缘，不留太多空白</li>
+                            <li>目标被部分遮挡时，标注可见部分</li>
+                            <li>同一目标只标注一次</li>
+                            <li>标注所有符合条件的目标，不遗漏</li>
+                            <li>使用一致的标注标准</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: rgba(239,68,68,0.15);">❌</div>
+                            <div class="card-title">应避免的问题</div>
+                        </div>
+                        <ul>
+                            <li>边界框过大，包含大量背景</li>
+                            <li>边界框过小，裁掉目标边缘</li>
+                            <li>同一目标重复标注</li>
+                            <li>漏标明显的目标</li>
+                            <li>类别标注错误或不一致</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>数据量建议</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>任务复杂度</th><th>每类建议数量</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>简单目标（如车辆、人脸）</td><td>200-500 张</td><td>目标形态规则，类内差异小</td></tr>
+                            <tr><td>中等目标（如缺陷检测）</td><td>500-2000 张</td><td>目标形态多样，需要更多样本</td></tr>
+                            <tr><td>复杂目标（如细粒度分类）</td><td>2000+ 张</td><td>类间差异小，需要大量样本区分</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>数据增强建议</h3>
+                <p>系统内置多种数据增强方式，可以有效扩充训练数据：</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>增强方式</th><th>参数</th><th>推荐值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>Mosaic</strong></td><td><code>mosaic</code></td><td>1.0</td><td>四图拼接，增加小目标训练机会</td></tr>
+                            <tr><td><strong>MixUp</strong></td><td><code>mixup</code></td><td>0.0-0.5</td><td>图像混合，提高泛化能力</td></tr>
+                            <tr><td><strong>水平翻转</strong></td><td><code>fliplr</code></td><td>0.5</td><td>适用于左右对称场景</td></tr>
+                            <tr><td><strong>色彩抖动</strong></td><td>自动</td><td>-</td><td>对抗光照变化</td></tr>
+                            <tr><td><strong>缩放</strong></td><td>自动</td><td>-</td><td>多尺度训练</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 格式自动转换 -->
+            <section class="section" id="data-conversion">
+                <div class="section-header">
+                    <div class="section-icon green">🔄</div>
+                    <h2>格式自动转换</h2>
+                </div>
+                
+                <p>
+                    训练开始时，系统会自动将 LabelMe JSON 格式转换为 YOLO TXT 格式。
+                    转换过程完全透明，无需用户干预。
+                </p>
+
+                <h3>转换流程</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">转换示意</span></div>
+                    <pre><code>LabelMe JSON 格式                    YOLO TXT 格式
+─────────────────                    ─────────────────
+{                                    
+  "shapes": [                        # class_id x_center y_center width height
+    {                                # (归一化坐标，范围 0-1)
+      "label": "0",                  
+      "points": [                    0 0.2083 0.3009 0.1042 0.2315
+        [100.5, 200.3],      →      1 0.0521 0.1389 0.0521 0.0926
+        [300.8, 450.6]               
+      ]                              
+    },                               
+    ...                              
+  ],                                 
+  "imageWidth": 1920,                
+  "imageHeight": 1080                
+}                                    </code></pre>
+                </div>
+
+                <h3>转换后的目录结构</h3>
+                <div class="file-tree"><span class="folder">output/yolov8m_20260130_120000/</span>
+├── <span class="folder">dataset/</span>               <span class="comment"># 自动生成的YOLO格式数据集</span>
+│   ├── <span class="folder">images/</span>
+│   │   ├── <span class="folder">train/</span>         <span class="comment"># 训练集图像</span>
+│   │   └── <span class="folder">val/</span>           <span class="comment"># 验证集图像</span>
+│   ├── <span class="folder">labels/</span>
+│   │   ├── <span class="folder">train/</span>         <span class="comment"># 训练集标注（.txt）</span>
+│   │   └── <span class="folder">val/</span>           <span class="comment"># 验证集标注（.txt）</span>
+│   ├── <span class="file">data.yaml</span>          <span class="comment"># YOLO配置文件</span>
+│   └── <span class="file">class_info.txt</span>     <span class="comment"># 类别信息说明</span>
+└── <span class="file">...</span></div>
+
+                <h3>data.yaml 配置文件</h3>
+                <p>自动生成的配置文件包含数据集路径和类别信息：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">yaml</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-yaml"># 自动生成的 YOLO 数据集配置
+path: /path/to/output/yolov8m_20260130_120000/dataset
+train: images/train
+val: images/val
+
+# 类别数量
+nc: 5
+
+# 类别名称（使用数字ID）
+names:
+  - '0'
+  - '1'
+  - '2'
+  - '3'
+  - '4'</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- YOLO模型库 -->
+            <section class="section" id="models">
+                <div class="section-header">
+                    <div class="section-icon orange">🧠</div>
+                    <h2>YOLO 模型库</h2>
+                </div>
+                
+                <p>
+                    本模块集成了 YOLOv5、YOLOv8、YOLOv11 三个系列共 15 个预训练模型，
+                    涵盖从超轻量级边缘设备到高性能服务器的全场景部署需求。
+                    所有模型均使用 COCO 数据集预训练，可直接迁移学习到您的任务。
+                </p>
+
+                <h3>YOLOv5 系列</h3>
+                <p>经典稳定的 YOLO 版本，社区资源丰富，适合需要稳定性的生产环境。</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>模型</th><th>参数量</th><th>mAP@50</th><th>mAP@50:95</th><th>输入尺寸</th><th>特点</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>YOLOv5n</strong></td><td>1.9M</td><td>45.7%</td><td>28.0%</td><td>640</td><td>最轻量，适合边缘设备</td></tr>
+                            <tr><td><strong>YOLOv5s</strong></td><td>7.2M</td><td>56.8%</td><td>37.4%</td><td>640</td><td>轻量级，速度精度平衡</td></tr>
+                            <tr><td><strong>YOLOv5m</strong></td><td>21.2M</td><td>63.9%</td><td>45.4%</td><td>640</td><td>推荐：性价比最高</td></tr>
+                            <tr><td><strong>YOLOv5l</strong></td><td>46.5M</td><td>67.3%</td><td>49.0%</td><td>640</td><td>高精度，适合服务器</td></tr>
+                            <tr><td><strong>YOLOv5x</strong></td><td>86.7M</td><td>68.9%</td><td>50.7%</td><td>640</td><td>最高精度，需大显存</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>YOLOv8 系列</h3>
+                <p>Ultralytics 主推版本，架构优化，训练更稳定，推荐作为默认选择。</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>模型</th><th>参数量</th><th>mAP@50</th><th>mAP@50:95</th><th>输入尺寸</th><th>特点</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>YOLOv8n</strong></td><td>3.2M</td><td>52.6%</td><td>37.3%</td><td>640</td><td>v8轻量级，推理速度最快</td></tr>
+                            <tr><td><strong>YOLOv8s</strong></td><td>11.2M</td><td>61.8%</td><td>44.9%</td><td>640</td><td>v8小型，速度精度平衡</td></tr>
+                            <tr><td><strong>YOLOv8m</strong></td><td>25.9M</td><td>67.2%</td><td>50.2%</td><td>640</td><td>⭐ 强烈推荐：综合表现优秀</td></tr>
+                            <tr><td><strong>YOLOv8l</strong></td><td>43.7M</td><td>69.8%</td><td>52.9%</td><td>640</td><td>v8大型，高精度场景</td></tr>
+                            <tr><td><strong>YOLOv8x</strong></td><td>68.2M</td><td>71.0%</td><td>53.9%</td><td>640</td><td>v8最大，极致精度</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>YOLOv11 系列</h3>
+                <p>最新一代 YOLO 架构，采用更先进的设计，精度和效率均有提升。</p>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>模型</th><th>参数量</th><th>mAP@50</th><th>mAP@50:95</th><th>输入尺寸</th><th>特点</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>YOLO11n</strong></td><td>2.6M</td><td>54.4%</td><td>39.5%</td><td>640</td><td>v11轻量级，最新架构</td></tr>
+                            <tr><td><strong>YOLO11s</strong></td><td>9.4M</td><td>62.5%</td><td>47.0%</td><td>640</td><td>v11小型，效率提升</td></tr>
+                            <tr><td><strong>YOLO11m</strong></td><td>20.1M</td><td>68.0%</td><td>51.5%</td><td>640</td><td>⭐ 推荐：最新技术</td></tr>
+                            <tr><td><strong>YOLO11l</strong></td><td>25.3M</td><td>69.5%</td><td>53.4%</td><td>640</td><td>v11大型，精度优秀</td></tr>
+                            <tr><td><strong>YOLO11x</strong></td><td>56.9M</td><td>72.0%</td><td>54.7%</td><td>640</td><td>🏆 SOTA性能</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>模型选择建议</h3>
+                <div class="grid grid-3">
+                    <div class="model-card">
+                        <div class="model-icon">🚀</div>
+                        <div class="model-info">
+                            <div class="model-name">边缘设备部署</div>
+                            <div class="model-meta">YOLOv8n / YOLO11n</div>
+                        </div>
+                        <span class="model-badge lightweight">轻量级</span>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-icon">⚖️</div>
+                        <div class="model-info">
+                            <div class="model-name">生产环境推荐</div>
+                            <div class="model-meta">YOLOv8m / YOLO11m</div>
+                        </div>
+                        <span class="model-badge recommended">推荐</span>
+                    </div>
+                    <div class="model-card">
+                        <div class="model-icon">🎯</div>
+                        <div class="model-info">
+                            <div class="model-name">追求极致精度</div>
+                            <div class="model-meta">YOLOv8x / YOLO11x</div>
+                        </div>
+                        <span class="model-badge sota">SOTA</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 训练参数详解 -->
+            <section class="section" id="training-params">
+                <div class="section-header">
+                    <div class="section-icon purple">⚙️</div>
+                    <h2>训练参数详解</h2>
+                </div>
+
+                <h3>基础参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param-name">epochs</span></td>
+                                <td><span class="param-type">int</span></td>
+                                <td><span class="param-default">100</span></td>
+                                <td>训练轮数。小数据集 50-100，大数据集 100-300</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">batch_size</span></td>
+                                <td><span class="param-type">int</span></td>
+                                <td><span class="param-default">16</span></td>
+                                <td>批次大小。显存不足时减小，建议 8/16/32</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">img_size</span></td>
+                                <td><span class="param-type">int</span></td>
+                                <td><span class="param-default">640</span></td>
+                                <td>输入图像尺寸。小目标多时可增大到 1280</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">learning_rate</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.01</span></td>
+                                <td>初始学习率。SGD 推荐 0.01，Adam 推荐 0.001</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">optimizer</span></td>
+                                <td><span class="param-type">str</span></td>
+                                <td><span class="param-default">"SGD"</span></td>
+                                <td>优化器。可选 SGD、Adam、AdamW</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>高级参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param-name">patience</span></td>
+                                <td><span class="param-type">int</span></td>
+                                <td><span class="param-default">50</span></td>
+                                <td>早停耐心值。验证指标连续 N 轮不提升则停止</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">weight_decay</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.0005</span></td>
+                                <td>权重衰减（L2 正则化）</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">momentum</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.937</span></td>
+                                <td>SGD 动量</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">warmup_epochs</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">3.0</span></td>
+                                <td>学习率预热轮数</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">cos_lr</span></td>
+                                <td><span class="param-type">bool</span></td>
+                                <td><span class="param-default">True</span></td>
+                                <td>是否使用余弦退火学习率</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">val_split</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.2</span></td>
+                                <td>验证集比例。设为 0 则训练集同时用于验证</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>数据增强参数</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>参数</th><th>类型</th><th>默认值</th><th>说明</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="param-name">mosaic</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">1.0</span></td>
+                                <td>Mosaic 增强概率。四图拼接，有效增加小目标</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">mixup</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.0</span></td>
+                                <td>MixUp 增强概率。图像混合</td>
+                            </tr>
+                            <tr>
+                                <td><span class="param-name">fliplr</span></td>
+                                <td><span class="param-type">float</span></td>
+                                <td><span class="param-default">0.5</span></td>
+                                <td>水平翻转概率</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="tip warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <div class="tip-title">小数据集注意事项</div>
+                        <div class="tip-text">
+                            当数据集较小（&lt;500 张）时，建议：
+                            ① 使用较小的模型（n/s）避免过拟合；
+                            ② 增大数据增强强度（mosaic=1.0, mixup=0.5）；
+                            ③ 减小 batch_size 以获得更多更新步数；
+                            ④ 适当增加 epochs 但监控过拟合。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 训练流程 -->
+            <section class="section" id="training-process">
+                <div class="section-header">
+                    <div class="section-icon green">▶️</div>
+                    <h2>训练流程</h2>
+                </div>
+
+                <h3>训练监控界面</h3>
+                <p>训练过程中，界面会实时显示以下信息：</p>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">📊</div>
+                            <div class="card-title">Loss 曲线</div>
+                        </div>
+                        <ul>
+                            <li><strong>Box Loss</strong>：边界框回归损失，衡量定位精度</li>
+                            <li><strong>Cls Loss</strong>：分类损失，衡量类别判断准确性</li>
+                            <li>理想情况下两者都应持续下降</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">📈</div>
+                            <div class="card-title">mAP 曲线</div>
+                        </div>
+                        <ul>
+                            <li><strong>mAP@50</strong>：IoU=0.5 时的平均精度</li>
+                            <li><strong>mAP@50:95</strong>：IoU=0.5:0.95 的平均精度</li>
+                            <li>理想情况下两者都应持续上升</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>训练日志解读</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">训练日志示例</span></div>
+                    <pre><code>[10:30:15] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:30:15] 🚀 开始目标检测训练
+[10:30:15] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:30:15] 🖥️ 设备: cuda:0
+[10:30:15] 🧠 模型: yolov8m.pt (25.9M 参数)
+[10:30:15] 📂 转换数据集为YOLO格式...
+[10:30:18]    ✅ 类别: ['0', '1', '2']
+[10:30:18]    ✅ 训练集: 800 张, 验证集: 200 张
+[10:30:20] 📊 Epoch 1/100
+[10:31:45]    box_loss: 1.2345  cls_loss: 2.3456  mAP@50: 0.1234
+[10:31:45] 📊 Epoch 2/100
+[10:33:10]    box_loss: 0.9876  cls_loss: 1.8765  mAP@50: 0.2345
+...
+[12:45:30] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[12:45:30] ✅ 训练完成!
+[12:45:30] 🏆 最佳 mAP@50: 0.8765
+[12:45:30] 🏆 最佳 mAP@50:95: 0.6543
+[12:45:30] 🏆 最佳 Epoch: 85
+[12:45:30] ⏱️ 总用时: 135.2 分钟
+[12:45:30] ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code></pre>
+                </div>
+
+                <h3>中断与恢复</h3>
+                <p>
+                    点击「停止训练」按钮可安全中断训练，系统会保存当前检查点。
+                    恢复训练时，选择上次的输出目录中的 <code>last_model.pt</code> 作为预训练权重即可继续。
+                </p>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 调参技巧 -->
+            <section class="section" id="training-tips">
+                <div class="section-header">
+                    <div class="section-icon orange">🎯</div>
+                    <h2>调参技巧</h2>
+                </div>
+
+                <h3>常见问题与解决方案</h3>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-red); color: white;">1</div>
+                        <div class="card-title">训练 Loss 不下降</div>
+                    </div>
+                    <p><strong>可能原因：</strong>学习率过大或过小、数据标注有问题、模型过于简单</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>降低学习率（如从 0.01 降到 0.001）</li>
+                        <li>检查数据标注是否正确</li>
+                        <li>增加 warmup_epochs</li>
+                        <li>尝试更大的模型</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-orange); color: white;">2</div>
+                        <div class="card-title">验证 mAP 上升后下降（过拟合）</div>
+                    </div>
+                    <p><strong>可能原因：</strong>数据量不足、模型过大、数据增强不够</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>增加数据增强强度（mixup=0.5, mosaic=1.0）</li>
+                        <li>使用更小的模型</li>
+                        <li>增加权重衰减（weight_decay=0.001）</li>
+                        <li>减少训练 epochs，依靠早停</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-blue); color: white;">3</div>
+                        <div class="card-title">小目标检测效果差</div>
+                    </div>
+                    <p><strong>可能原因：</strong>输入分辨率不够、小目标样本不足</p>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>增大 img_size（如 1280）</li>
+                        <li>使用 Mosaic 增强（mosaic=1.0）</li>
+                        <li>增加小目标的标注样本</li>
+                        <li>考虑使用切图策略</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-purple); color: white;">4</div>
+                        <div class="card-title">CUDA out of memory</div>
+                    </div>
+                    <p><strong>解决方案：</strong></p>
+                    <ul>
+                        <li>减小 batch_size（如从 16 减到 8）</li>
+                        <li>减小 img_size（如从 640 减到 512）</li>
+                        <li>使用更小的模型（如 n 或 s）</li>
+                        <li>关闭 Mosaic 增强</li>
+                    </ul>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 检查点格式 -->
+            <section class="section" id="checkpoint-format">
+                <div class="section-header">
+                    <div class="section-icon blue">💾</div>
+                    <h2>检查点格式</h2>
+                </div>
+                
+                <p>
+                    训练完成后，系统会生成标准的 YOLO 检查点文件（.pt 格式）。
+                    这些文件可以直接用于推理或继续训练。
+                </p>
+
+                <h3>检查点内容</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import torch
+
+# 加载检查点
+checkpoint = torch.load('best_model.pt', map_location='cpu')
+
+# 检查点包含以下信息
+print(checkpoint.keys())
+# dict_keys(['epoch', 'best_fitness', 'model', 'ema', 'updates', 
+#            'optimizer', 'train_args', 'date', 'version'])
+
+# 训练参数
+print(checkpoint['train_args'])
+# 包含: epochs, batch, imgsz, lr0, optimizer, 等
+
+# 模型架构信息
+print(checkpoint['model'].yaml)
+# 包含模型结构定义</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 输出目录结构 -->
+            <section class="section" id="output-structure">
+                <div class="section-header">
+                    <div class="section-icon green">📂</div>
+                    <h2>输出目录结构</h2>
+                </div>
+                
+                <div class="file-tree"><span class="folder">output/yolov8m_20260130_120000/</span>
+├── <span class="folder">dataset/</span>                    <span class="comment"># 自动生成的YOLO格式数据集</span>
+│   ├── <span class="folder">images/</span>
+│   │   ├── <span class="folder">train/</span>
+│   │   └── <span class="folder">val/</span>
+│   ├── <span class="folder">labels/</span>
+│   │   ├── <span class="folder">train/</span>
+│   │   └── <span class="folder">val/</span>
+│   ├── <span class="file">data.yaml</span>
+│   └── <span class="file">class_info.txt</span>
+├── <span class="folder">weights/</span>                     <span class="comment"># Ultralytics原始权重</span>
+│   ├── <span class="file">best.pt</span>
+│   └── <span class="file">last.pt</span>
+├── <span class="folder">weights_model_importer/</span>     <span class="comment"># 转换后的标准权重（推荐使用）</span>
+│   ├── <span class="file">best_model.pt</span>            <span class="comment"># 🏆 最佳模型</span>
+│   └── <span class="file">last_model.pt</span>            <span class="comment"># 最后一轮模型</span>
+├── <span class="file">training.log</span>                 <span class="comment"># 训练日志</span>
+├── <span class="file">results.csv</span>                  <span class="comment"># 训练指标记录</span>
+├── <span class="file">confusion_matrix.png</span>        <span class="comment"># 混淆矩阵图</span>
+├── <span class="file">F1_curve.png</span>                 <span class="comment"># F1曲线图</span>
+├── <span class="file">PR_curve.png</span>                 <span class="comment"># PR曲线图</span>
+├── <span class="file">P_curve.png</span>                  <span class="comment"># Precision曲线图</span>
+├── <span class="file">R_curve.png</span>                  <span class="comment"># Recall曲线图</span>
+└── <span class="file">results.png</span>                  <span class="comment"># 综合训练曲线图</span></div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 评估指标详解 -->
+            <section class="section" id="metrics">
+                <div class="section-header">
+                    <div class="section-icon purple">📊</div>
+                    <h2>评估指标详解</h2>
+                </div>
+
+                <h3>核心指标</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>指标</th><th>含义</th><th>计算方式</th><th>理想值</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>mAP@50</strong></td>
+                                <td>IoU=0.5 时的平均精度</td>
+                                <td>所有类别 AP@50 的平均值</td>
+                                <td>越高越好，通常 > 0.8</td>
+                            </tr>
+                            <tr>
+                                <td><strong>mAP@50:95</strong></td>
+                                <td>IoU=0.5:0.95 的平均精度</td>
+                                <td>不同 IoU 阈值下 AP 的平均</td>
+                                <td>越高越好，通常 > 0.5</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Precision</strong></td>
+                                <td>精确率</td>
+                                <td>TP / (TP + FP)</td>
+                                <td>高精度场景需 > 0.9</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Recall</strong></td>
+                                <td>召回率</td>
+                                <td>TP / (TP + FN)</td>
+                                <td>低漏检场景需 > 0.9</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Box Loss</strong></td>
+                                <td>边界框回归损失</td>
+                                <td>定位误差</td>
+                                <td>越低越好</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cls Loss</strong></td>
+                                <td>分类损失</td>
+                                <td>分类误差</td>
+                                <td>越低越好</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>IoU（交并比）说明</h3>
+                <p>IoU（Intersection over Union）是衡量预测框与真实框重叠程度的指标：</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">公式</span></div>
+                    <pre><code>IoU = 预测框 ∩ 真实框 / 预测框 ∪ 真实框
+
+IoU = 0.5  →  预测框与真实框重叠 50%
+IoU = 0.75 →  预测框与真实框重叠 75%
+IoU = 1.0  →  预测框与真实框完全重合</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 模型转换概述 -->
+            <section class="section" id="conversion">
+                <div class="section-header">
+                    <div class="section-icon orange">🔄</div>
+                    <h2>模型转换概述</h2>
+                </div>
+                
+                <p>
+                    训练完成后，您可以将 PyTorch 模型转换为高性能推理引擎格式，
+                    以获得更快的推理速度和更低的资源消耗。
+                </p>
+
+                <h3>支持的后端</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>后端</th><th>适用场景</th><th>支持精度</th><th>硬件要求</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>TensorRT</strong></td>
+                                <td>NVIDIA GPU 高性能推理</td>
+                                <td>FP32, FP16, INT8</td>
+                                <td>NVIDIA GPU</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ONNX Runtime</strong></td>
+                                <td>跨平台通用推理</td>
+                                <td>FP32, FP16</td>
+                                <td>CPU/GPU 均可</td>
+                            </tr>
+                            <tr>
+                                <td><strong>OpenVINO</strong></td>
+                                <td>Intel 硬件优化</td>
+                                <td>FP32, FP16, INT8</td>
+                                <td>Intel CPU/GPU/VPU</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>精度模式说明</h3>
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-green-dim);">FP32</div>
+                            <div class="card-title">单精度浮点</div>
+                        </div>
+                        <p>保持原始精度，无损转换。适合对精度要求极高的场景。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">FP16</div>
+                            <div class="card-title">半精度浮点</div>
+                        </div>
+                        <p>推荐选择。精度损失极小，速度提升 50-100%，显存减半。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-purple-dim);">INT8</div>
+                            <div class="card-title">8位整数</div>
+                        </div>
+                        <p>最大加速。需要校准数据，可能有少量精度损失。</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-orange-dim);">Mixed</div>
+                            <div class="card-title">混合精度</div>
+                        </div>
+                        <p>敏感层用 FP16，其他层用 INT8。平衡精度和速度。</p>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- TensorRT转换 -->
+            <section class="section" id="tensorrt">
+                <div class="section-header">
+                    <div class="section-icon green">⚡</div>
+                    <h2>TensorRT 转换</h2>
+                </div>
+                
+                <p>TensorRT 是 NVIDIA 的高性能深度学习推理优化器，可提供最快的 GPU 推理速度。</p>
+
+                <h3>转换步骤</h3>
+                <ol>
+                    <li>切换到「模型转换」标签页</li>
+                    <li>选择要转换的模型文件（<code>.pt</code>）</li>
+                    <li>目标后端选择 <strong>tensorrt</strong></li>
+                    <li>精度模式选择 <strong>fp16</strong>（推荐）</li>
+                    <li>设置 Workspace 大小（默认 4GB）</li>
+                    <li>点击「开始转换」</li>
+                </ol>
+
+                <h3>INT8 量化校准</h3>
+                <p>如果选择 INT8 精度，需要提供校准数据集：</p>
+                <ul>
+                    <li>准备 100-500 张代表性图片</li>
+                    <li>无需标注文件，只需图片</li>
+                    <li>图片应覆盖实际使用场景的分布</li>
+                </ul>
+
+                <div class="tip info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <div class="tip-title">TensorRT 版本兼容性</div>
+                        <div class="tip-text">
+                            生成的 TensorRT 引擎与特定 GPU 架构和 TensorRT 版本绑定。
+                            在不同硬件或版本上部署时，需要重新转换。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- ONNX Runtime -->
+            <section class="section" id="onnxruntime">
+                <div class="section-header">
+                    <div class="section-icon blue">🟢</div>
+                    <h2>ONNX Runtime 转换</h2>
+                </div>
+                
+                <p>ONNX Runtime 提供跨平台的推理支持，适合需要在多种硬件上部署的场景。</p>
+
+                <h3>转换步骤</h3>
+                <ol>
+                    <li>目标后端选择 <strong>onnxruntime</strong></li>
+                    <li>精度模式选择 <strong>fp16</strong> 或 <strong>fp32</strong></li>
+                    <li>点击「开始转换」</li>
+                </ol>
+
+                <h3>推理代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">import onnxruntime as ort
+import numpy as np
+import cv2
+
+# 创建推理会话
+session = ort.InferenceSession(
+    "best_model.onnx",
+    providers=['CUDAExecutionProvider', 'CPUExecutionProvider']
+)
+
+# 预处理图像
+def preprocess(image_path, input_size=640):
+    img = cv2.imread(image_path)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (input_size, input_size))
+    img = img.astype(np.float32) / 255.0
+    img = np.transpose(img, (2, 0, 1))
+    img = np.expand_dims(img, axis=0)
+    return img
+
+# 推理
+input_tensor = preprocess("test.jpg")
+outputs = session.run(None, {"images": input_tensor})
+
+# 后处理（NMS等）
+# ...</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- OpenVINO转换 -->
+            <section class="section" id="openvino">
+                <div class="section-header">
+                    <div class="section-icon purple">🔷</div>
+                    <h2>OpenVINO 转换</h2>
+                </div>
+                
+                <p>OpenVINO 是 Intel 的推理优化工具包，针对 Intel CPU/GPU/VPU 进行了深度优化。</p>
+
+                <h3>转换步骤</h3>
+                <ol>
+                    <li>目标后端选择 <strong>openvino</strong></li>
+                    <li>精度模式选择 <strong>fp16</strong>（推荐）</li>
+                    <li>点击「开始转换」</li>
+                </ol>
+
+                <h3>输出文件</h3>
+                <p>OpenVINO 转换会生成以下文件：</p>
+                <div class="file-tree"><span class="folder">converted/</span>
+├── <span class="file">best_model.xml</span>      <span class="comment"># 模型结构</span>
+└── <span class="file">best_model.bin</span>      <span class="comment"># 模型权重</span></div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 批量推理 -->
+            <section class="section" id="inference">
+                <div class="section-header">
+                    <div class="section-icon blue">🔍</div>
+                    <h2>批量推理</h2>
+                </div>
+                
+                <p>批量推理功能可以对大量图片进行快速目标检测，结果保存为可视化图片和 JSON 文件。</p>
+
+                <h3>使用步骤</h3>
+                <ol>
+                    <li>切换到「批量推理」标签页</li>
+                    <li>选择训练好的模型文件（<code>.pt</code>）</li>
+                    <li>输入待推理的图片路径（文件或文件夹）</li>
+                    <li>设置置信度阈值（默认 0.25）和 IoU 阈值（默认 0.45）</li>
+                    <li>设置输出目录</li>
+                    <li>点击「开始推理」</li>
+                </ol>
+
+                <h3>输出结果</h3>
+                <div class="file-tree"><span class="folder">inference_output/</span>
+├── <span class="folder">images/</span>              <span class="comment"># 可视化结果图片</span>
+│   ├── <span class="file">img_001.jpg</span>       <span class="comment"># 绘制了检测框的图片</span>
+│   ├── <span class="file">img_002.jpg</span>
+│   └── <span class="file">...</span>
+└── <span class="folder">jsons/</span>               <span class="comment"># JSON格式检测结果</span>
+    ├── <span class="file">img_001.json</span>
+    ├── <span class="file">img_002.json</span>
+    └── <span class="file">...</span></div>
+
+                <h3>JSON 结果格式</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">json</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-json">{
+  "image_path": "/path/to/img_001.jpg",
+  "image_size": [1920, 1080],
+  "detections": [
+    {
+      "class_id": 0,
+      "class_name": "0",
+      "confidence": 0.9234,
+      "bbox": [100, 200, 300, 450]  // [x1, y1, x2, y2]
+    },
+    {
+      "class_id": 1,
+      "class_name": "1",
+      "confidence": 0.8765,
+      "bbox": [500, 100, 700, 300]
+    }
+  ],
+  "num_detections": 2
+}</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- API接口 -->
+            <section class="section" id="api">
+                <div class="section-header">
+                    <div class="section-icon green">🔌</div>
+                    <h2>API 接口调用</h2>
+                </div>
+                
+                <p>通过 Python 代码直接调用推理功能。</p>
+
+                <h3>使用 Ultralytics 官方 API</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">from ultralytics import YOLO
+import cv2
+
+# 加载模型
+model = YOLO('output/yolov8m_xxx/weights_model_importer/best_model.pt')
+
+# 单张图片推理
+results = model.predict(
+    source='test.jpg',
+    conf=0.25,      # 置信度阈值
+    iou=0.45,       # NMS IoU阈值
+    save=False,     # 不自动保存
+    verbose=False
+)
+
+# 处理结果
+for result in results:
+    boxes = result.boxes
+    for box in boxes:
+        # 获取坐标 [x1, y1, x2, y2]
+        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+        # 获取置信度
+        confidence = box.conf[0].cpu().numpy()
+        # 获取类别ID
+        class_id = int(box.cls[0].cpu().numpy())
+        
+        print(f"类别: {class_id}, 置信度: {confidence:.4f}, 坐标: [{x1:.0f}, {y1:.0f}, {x2:.0f}, {y2:.0f}]")
+
+# 批量推理
+results = model.predict(
+    source='images_folder/',
+    conf=0.25,
+    save=True,          # 保存可视化结果
+    project='output',   # 输出目录
+    name='inference'    # 子目录名
+)</code></pre>
+                </div>
+
+                <h3>可视化检测结果</h3>
+                <div class="code-block">
+                    <div class="code-header"><span class="code-lang">python</span><button class="code-copy" onclick="copyCode(this)">复制</button></div>
+                    <pre><code class="language-python">from ultralytics import YOLO
+import cv2
+
+model = YOLO('best_model.pt')
+results = model.predict('test.jpg', conf=0.25)
+
+# 方式一：使用内置绘图
+annotated_frame = results[0].plot()
+cv2.imwrite('result.jpg', annotated_frame)
+
+# 方式二：自定义绘图
+img = cv2.imread('test.jpg')
+for box in results[0].boxes:
+    x1, y1, x2, y2 = map(int, box.xyxy[0])
+    conf = float(box.conf[0])
+    cls = int(box.cls[0])
+    
+    # 绘制边框
+    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    # 绘制标签
+    label = f"{cls}: {conf:.2f}"
+    cv2.putText(img, label, (x1, y1 - 10), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+cv2.imwrite('custom_result.jpg', img)</code></pre>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 部署指南 -->
+            <section class="section" id="deployment">
+                <div class="section-header">
+                    <div class="section-icon orange">🚢</div>
+                    <h2>部署指南</h2>
+                </div>
+
+                <h3>部署方案选择</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>场景</th><th>推荐后端</th><th>硬件</th><th>预期速度</th></tr></thead>
+                        <tbody>
+                            <tr><td>云服务 API</td><td>TensorRT FP16</td><td>NVIDIA GPU</td><td>&lt;10ms</td></tr>
+                            <tr><td>边缘服务器</td><td>OpenVINO FP16</td><td>Intel CPU</td><td>20-50ms</td></tr>
+                            <tr><td>嵌入式设备</td><td>TensorRT INT8</td><td>Jetson</td><td>30-100ms</td></tr>
+                            <tr><td>桌面应用</td><td>ONNX Runtime</td><td>CPU/GPU</td><td>50-200ms</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>部署检查清单</h3>
+                <ul>
+                    <li>✅ 模型精度（mAP）满足业务要求</li>
+                    <li>✅ 已转换为目标部署格式</li>
+                    <li>✅ 推理速度满足延迟要求</li>
+                    <li>✅ 准备好前处理和后处理代码</li>
+                    <li>✅ 测试了边界情况（空图、异常输入）</li>
+                </ul>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 常见问题 -->
+            <section class="section" id="faq">
+                <div class="section-header">
+                    <div class="section-icon purple">❓</div>
+                    <h2>常见问题</h2>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">标签必须是数字吗？不能用文字吗？</div></div>
+                    <p><strong>答：</strong>是的，目前系统要求标签使用数字 ID（0, 1, 2...）。这是为了确保与 YOLO 格式的兼容性。您可以在后处理时将数字 ID 映射为有意义的文字标签。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">为什么训练时显示 mAP 为 0？</div></div>
+                    <p><strong>答：</strong>可能原因：① 数据标注格式不正确；② 类别 ID 与实际数据不匹配；③ 训练刚开始，模型还没学到有效特征。建议检查转换后的 YOLO 标注文件是否正确。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">如何处理类别不平衡问题？</div></div>
+                    <p><strong>答：</strong>① 对少数类别进行过采样；② 使用数据增强增加少数类别的变体；③ 调整 loss 权重（需要修改代码）；④ 收集更多少数类别的样本。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">TensorRT 转换失败怎么办？</div></div>
+                    <p><strong>答：</strong>① 检查 CUDA 和 TensorRT 版本是否匹配；② 尝试减小 Workspace 大小；③ 先转换为 ONNX 格式确认模型正常；④ 查看详细错误日志定位问题。</p>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-icon" style="background: var(--accent-blue-dim);">Q</div><div class="card-title">如何提高小目标检测效果？</div></div>
+                    <p><strong>答：</strong>① 增大输入尺寸（如 1280）；② 使用 Mosaic 数据增强；③ 增加小目标的训练样本；④ 使用切图策略将大图切成小块分别检测。</p>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- 更新日志 -->
+            <section class="section" id="changelog">
+                <div class="section-header">
+                    <div class="section-icon green">📋</div>
+                    <h2>更新日志</h2>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-title">v2.0.1 (2026-01-30)</div></div>
+                    <ul>
+                        <li>✨ 新增 YOLOv11 系列模型支持</li>
+                        <li>✨ 新增 TTA（测试时增强）推理功能</li>
+                        <li>✨ 新增负样本自动处理</li>
+                        <li>🐛 修复连续转换中止问题</li>
+                        <li>🐛 修复 Matplotlib 线程安全问题</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-title">v2.0.0 (2026-01-15)</div></div>
+                    <ul>
+                        <li>🎉 集成 DL-Hub 平台</li>
+                        <li>✨ 全新 Gradio Web 界面</li>
+                        <li>✨ 支持 LabelMe 格式自动转换</li>
+                        <li>✨ 多后端模型转换支持</li>
+                        <li>✨ 实时训练监控（Loss/mAP 曲线）</li>
+                    </ul>
+                </div>
+            </section>
+
+            <footer style="text-align: center; padding: 60px 0; border-top: 1px solid var(--border-color); margin-top: 60px;">
+                <p style="color: var(--text-primary);"><strong>DL-Hub 目标检测模块</strong> · 完整使用手册</p>
+                <p style="color: var(--text-muted); font-size: 13px;">© 2026 DL-Hub Team</p>
+            </footer>
+        </div>
+    </main>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
+    <script>
+        hljs.highlightAll();
+        
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => { btn.textContent = '复制'; }, 2000);
+            });
+        }
+        
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+        
+        function updateActiveNav() {
+            let current = '';
+            sections.forEach(s => { 
+                if (window.scrollY >= s.offsetTop - 150) current = s.id; 
+            });
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        }
+        
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            updateActiveNav();
+            backToTop.classList.toggle('visible', window.scrollY > 500);
+        });
+        
+        navLinks.forEach(l => l.addEventListener('click', e => {
+            e.preventDefault();
+            const t = document.getElementById(l.getAttribute('href').slice(1));
+            if (t) t.scrollIntoView({ behavior: 'smooth' });
+        }));
+        
+        updateActiveNav();
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": "dc365022c26f02f2",
+      "username": "zhujun",
+      "nickname": "zhujun",
+      "password_hash": "b408710ec1d52970bd255bb6569a4f825d91146040b2978f414ee472cc505e20",
+      "salt": "c21e56ca99fa80d346abd303cefbbc60",
+      "created_at": "2026-03-16T19:29:33.974515",
+      "last_login": "2026-03-18T18:10:25.404628"
+    }
+  ]
+}

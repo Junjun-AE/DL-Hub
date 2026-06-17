@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语义分割模块 - 完整使用手册 | DL-Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-tertiary: #1f2937;
+            --bg-card: rgba(17, 24, 39, 0.8);
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --accent-green: #10b981;
+            --accent-green-dim: rgba(16, 185, 129, 0.1);
+            --accent-blue: #3b82f6;
+            --accent-blue-dim: rgba(59, 130, 246, 0.1);
+            --accent-purple: #8b5cf6;
+            --accent-purple-dim: rgba(139, 92, 246, 0.1);
+            --accent-orange: #f59e0b;
+            --accent-orange-dim: rgba(245, 158, 11, 0.1);
+            --accent-red: #ef4444;
+            --accent-red-dim: rgba(239, 68, 68, 0.1);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-dim: rgba(6, 182, 212, 0.1);
+            --accent-pink: #ec4899;
+            --accent-pink-dim: rgba(236, 72, 153, 0.1);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --code-bg: #1a1f2e;
+            --sidebar-width: 280px;
+            --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: var(--font-sans); background: var(--bg-primary); color: var(--text-primary); line-height: 1.8; font-size: 16px; }
+        
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            z-index: 100;
+            padding: 20px 0;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .sidebar-logo-text h1 { font-size: 17px; font-weight: 700; }
+        .sidebar-logo-text span { font-size: 11px; color: var(--text-muted); }
+        
+        .nav-section { margin-bottom: 6px; }
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .nav-link:hover { background: rgba(255,255,255,0.03); color: var(--text-primary); }
+        .nav-link.active { background: var(--accent-purple-dim); color: var(--accent-purple); border-left-color: var(--accent-purple); }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+        }
+        
+        /* Hero区域 */
+        .hero {
+            background: linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(168,85,247,0.12) 50%, rgba(236,72,153,0.08) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 70px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '🎨';
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 200px;
+            opacity: 0.08;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--accent-purple-dim);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-purple);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 52px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, #d1d5db 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-subtitle { font-size: 20px; color: var(--text-secondary); max-width: 700px; line-height: 1.7; }
+        .hero-meta { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+        .hero-meta-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+        
+        /* 内容区 */
+        .content {
+            max-width: 1400px;
+            padding: 60px 80px;
+            margin: 0 auto;
+        }
+        
+        /* 章节样式 */
+        .section { margin-bottom: 70px; }
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .section-icon.green { background: var(--accent-green-dim); }
+        .section-icon.blue { background: var(--accent-blue-dim); }
+        .section-icon.purple { background: var(--accent-purple-dim); }
+        .section-icon.orange { background: var(--accent-orange-dim); }
+        .section-icon.cyan { background: var(--accent-cyan-dim); }
+        .section-icon.pink { background: var(--accent-pink-dim); }
+        .section-icon.red { background: var(--accent-red-dim); }
+        
+        .section h2 { font-size: 30px; font-weight: 700; }
+        .section h3 { font-size: 22px; font-weight: 600; margin: 40px 0 18px; color: var(--text-primary); }
+        .section h4 { font-size: 18px; font-weight: 600; margin: 28px 0 14px; color: var(--text-primary); }
+        .section p { color: var(--text-secondary); margin-bottom: 16px; line-height: 1.9; }
+        .section ul, .section ol { color: var(--text-secondary); margin-bottom: 16px; padding-left: 24px; }
+        .section li { margin-bottom: 10px; line-height: 1.8; }
+        .section strong { color: var(--text-primary); }
+        
+        /* 卡片 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .card h4 { font-size: 17px; font-weight: 600; margin: 0; }
+        
+        /* 特性网格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 12px 40px rgba(139, 92, 246, 0.1);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+        .feature-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: var(--text-muted); margin: 0; line-height: 1.7; }
+        
+        /* 模型卡片 */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
+        }
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 22px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .model-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+        .model-card.recommended {
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+        }
+        .model-card.recommended::before {
+            content: '⭐ 推荐';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .model-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--accent-purple); }
+        .model-backbone { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+        .model-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+        .model-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .model-stat-value { color: var(--text-primary); font-weight: 600; }
+        .model-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        
+        /* 表格 */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+        td { color: var(--text-secondary); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:last-child td { border-bottom: none; }
+        
+        /* 代码块 */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .code-lang {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .code-copy {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .code-copy:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
+        pre {
+            padding: 18px;
+            overflow-x: auto;
+            margin: 0;
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+        }
+        :not(pre) > code {
+            background: var(--code-bg);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 13px;
+            color: var(--accent-pink);
+        }
+        
+        /* 提示框 */
+        .tip-box {
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .tip-box.info {
+            background: var(--accent-blue-dim);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .tip-box.success {
+            background: var(--accent-green-dim);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .tip-box.warning {
+            background: var(--accent-orange-dim);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .tip-box.danger {
+            background: var(--accent-red-dim);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .tip-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+        .tip-content { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .tip-content strong { color: var(--text-primary); }
+        
+        /* 步骤指引 */
+        .steps { margin: 24px 0; }
+        .step {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 28px;
+            position: relative;
+        }
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 48px;
+            bottom: -8px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-purple) 0%, transparent 100%);
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+            color: white;
+        }
+        .step-content { flex: 1; padding-top: 6px; }
+        .step-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+        .step-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        
+        /* 文件树 */
+        .file-tree {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.9;
+            margin: 20px 0;
+        }
+        .file-tree .folder { color: var(--accent-purple); }
+        .file-tree .file { color: var(--text-secondary); }
+        .file-tree .comment { color: var(--text-muted); font-style: italic; }
+        
+        /* 架构图 */
+        .architecture-diagram {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin: 24px 0;
+            text-align: center;
+        }
+        .arch-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .arch-box {
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .arch-box.input { background: var(--accent-blue-dim); border: 2px solid var(--accent-blue); color: var(--accent-blue); }
+        .arch-box.process { background: var(--accent-purple-dim); border: 2px solid var(--accent-purple); color: var(--accent-purple); }
+        .arch-box.output { background: var(--accent-green-dim); border: 2px solid var(--accent-green); color: var(--accent-green); }
+        .arch-arrow { color: var(--text-muted); font-size: 24px; }
+        
+        /* 参数表格样式 */
+        .param-table { width: 100%; }
+        .param-table th:first-child { width: 160px; }
+        .param-table th:nth-child(2) { width: 100px; }
+        .param-table th:nth-child(3) { width: 100px; }
+        .param-default { color: var(--accent-purple); font-family: var(--font-mono); font-size: 13px; }
+        .param-range { color: var(--accent-cyan); font-family: var(--font-mono); font-size: 12px; }
+        
+        /* 指标说明 */
+        .metric-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .metric-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .metric-name { font-weight: 600; margin-bottom: 4px; }
+        .metric-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        
+        /* 对比表格 */
+        .comparison-table th { text-align: center; }
+        .comparison-table td { text-align: center; }
+        .comparison-table td:first-child { text-align: left; font-weight: 600; }
+        
+        /* FAQ样式 */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .faq-question {
+            padding: 18px 22px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .faq-question:hover { background: rgba(255,255,255,0.02); }
+        .faq-question::before { content: '❓'; font-size: 18px; }
+        .faq-answer {
+            padding: 0 22px 18px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.8;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            margin-top: -1px;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; width: 100%; }
+            .hero { padding: 40px 24px; }
+            .content { padding: 40px 24px; }
+            .hero h1 { font-size: 36px; }
+        }
+        
+        /* 滚动条美化 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    </style>
+</head>
+<body>
+    <!-- 侧边栏 -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <div class="sidebar-logo-icon">🎨</div>
+                <div class="sidebar-logo-text">
+                    <h1>语义分割</h1>
+                    <span>DL-Hub 模块手册</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">快速开始</div>
+            <a href="#overview" class="nav-link active">📋 功能概览</a>
+            <a href="#quickstart" class="nav-link">🚀 快速上手</a>
+            <a href="#environment" class="nav-link">⚙️ 环境配置</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">数据准备</div>
+            <a href="#labelme-format" class="nav-link">📁 LabelMe格式</a>
+            <a href="#annotation-tips" class="nav-link">✏️ 标注技巧</a>
+            <a href="#auto-convert" class="nav-link">🔄 自动转换</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">模型训练</div>
+            <a href="#model-library" class="nav-link">🏛️ 模型库</a>
+            <a href="#train-params" class="nav-link">🎛️ 训练参数</a>
+            <a href="#loss-functions" class="nav-link">📊 损失函数</a>
+            <a href="#data-augmentation" class="nav-link">🎲 数据增强</a>
+            <a href="#training-process" class="nav-link">📈 训练过程</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">模型输出</div>
+            <a href="#checkpoint" class="nav-link">💾 模型权重</a>
+            <a href="#output-structure" class="nav-link">📂 输出结构</a>
+            <a href="#metrics" class="nav-link">📊 评估指标</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">模型转换</div>
+            <a href="#conversion-overview" class="nav-link">🔧 转换概览</a>
+            <a href="#precision" class="nav-link">🎯 精度选择</a>
+            <a href="#tensorrt" class="nav-link">⚡ TensorRT</a>
+            <a href="#onnx" class="nav-link">📦 ONNX Runtime</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">推理部署</div>
+            <a href="#batch-inference" class="nav-link">🔍 批量推理</a>
+            <a href="#sliding-window" class="nav-link">🪟 滑动窗口</a>
+            <a href="#api-usage" class="nav-link">💻 API使用</a>
+            <a href="#deployment" class="nav-link">🚢 部署指南</a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">附录</div>
+            <a href="#faq" class="nav-link">❓ 常见问题</a>
+            <a href="#changelog" class="nav-link">📝 更新日志</a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- Hero区域 -->
+        <div class="hero">
+            <div class="hero-badge">
+                <span>📖</span>
+                <span>完整使用手册 v2.0</span>
+            </div>
+            <h1>语义分割模块</h1>
+            <p class="hero-subtitle">
+                基于 SegFormer 的工业级语义分割解决方案，支持像素级精确分割、多类别标注、
+                滑动窗口大图推理，输出 LabelMe 格式标注，无缝对接工业质检流程。
+            </p>
+            <div class="hero-meta">
+                <div class="hero-meta-item">
+                    <span>🏗️</span>
+                    <span>架构：SegFormer (MiT-B0~B5)</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📊</span>
+                    <span>6 种模型规格</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>🔧</span>
+                    <span>框架：MMSegmentation</span>
+                </div>
+                <div class="hero-meta-item">
+                    <span>📅</span>
+                    <span>更新：2025年1月</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 内容区 -->
+        <div class="content">
+            <!-- 功能概览 -->
+            <section id="overview" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">📋</div>
+                    <h2>功能概览</h2>
+                </div>
+                
+                <p>
+                    语义分割模块是 DL-Hub 的核心组件之一，专为工业缺陷检测、医学图像分析等像素级标注任务设计。
+                    基于 SegFormer 架构，采用 Mix Transformer (MiT) 作为编码器，具有高效、准确、易于部署的特点。
+                </p>
+                
+                <h3>核心特性</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-purple-dim);">🎯</div>
+                        <h4>像素级精确分割</h4>
+                        <p>支持多类别语义分割，每个像素都有明确的类别归属，精确定位缺陷区域。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-blue-dim);">🏛️</div>
+                        <h4>6种SegFormer模型</h4>
+                        <p>从轻量级B0（3.7M参数）到高精度B5（82M参数），满足不同场景需求。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">📁</div>
+                        <h4>LabelMe格式支持</h4>
+                        <p>原生支持LabelMe标注工具，训练数据和推理结果均为JSON格式，便于查看和编辑。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-orange-dim);">🪟</div>
+                        <h4>滑动窗口推理</h4>
+                        <p>支持大图切片推理，自动拼接结果，解决显存限制问题，适用于高分辨率工业图像。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-cyan-dim);">⚡</div>
+                        <h4>多格式模型转换</h4>
+                        <p>支持导出为TensorRT、ONNX、OpenVINO格式，适配GPU/CPU/边缘设备部署。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-pink-dim);">📊</div>
+                        <h4>完整训练监控</h4>
+                        <p>实时显示Loss曲线、mIoU指标、各类别IoU，支持早停和自动保存最优模型。</p>
+                    </div>
+                </div>
+                
+                <h3>技术架构</h3>
+                <div class="architecture-diagram">
+                    <div class="arch-flow">
+                        <div class="arch-box input">📁 LabelMe JSON<br><small>多边形标注</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">🔄 数据转换<br><small>生成Mask PNG</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">🏗️ SegFormer<br><small>MiT + Head</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box output">🎯 分割结果<br><small>LabelMe JSON</small></div>
+                    </div>
+                </div>
+                
+                <h3>适用场景</h3>
+                <ul>
+                    <li><strong>工业缺陷检测：</strong>划痕、裂纹、污点等表面缺陷的精确定位和分割</li>
+                    <li><strong>医学图像分析：</strong>病灶区域分割、组织器官分割、细胞分割</li>
+                    <li><strong>遥感图像处理：</strong>土地利用分类、建筑物提取、道路分割</li>
+                    <li><strong>自动驾驶：</strong>道路场景理解、可行驶区域分割</li>
+                    <li><strong>农业智能：</strong>作物病虫害区域识别、果实成熟度分割</li>
+                </ul>
+            </section>
+            
+            <!-- 快速上手 -->
+            <section id="quickstart" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">🚀</div>
+                    <h2>快速上手</h2>
+                </div>
+                
+                <p>
+                    只需5个步骤，即可完成从数据标注到模型训练的完整流程。以下是一个工业缺陷分割的示例。
+                </p>
+                
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">使用 LabelMe 标注数据</div>
+                            <div class="step-desc">
+                                打开 LabelMe 工具，使用多边形工具勾画缺陷区域。<strong>标签必须使用数字</strong>（0, 1, 2...），
+                                代表不同的缺陷类别。保存后会生成与图像同名的 JSON 文件。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">组织数据目录</div>
+                            <div class="step-desc">
+                                创建两个文件夹：<code>images/</code> 存放原始图像，<code>jsons/</code> 存放 JSON 标注文件。
+                                文件名需一一对应（如 <code>001.jpg</code> 对应 <code>001.json</code>）。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">配置训练参数</div>
+                            <div class="step-desc">
+                                在界面中设置类别数（不含背景）、选择模型规格（推荐 B2）、
+                                设置训练轮数（100-300）、批次大小（根据显存调整）。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">开始训练</div>
+                            <div class="step-desc">
+                                点击"开始训练"，系统会自动转换数据格式、下载预训练权重、启动训练。
+                                实时监控 Loss 和 mIoU 指标，训练结束后自动保存最优模型。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <div class="step-title">批量推理</div>
+                            <div class="step-desc">
+                                切换到"批量推理"选项卡，选择训练好的模型，指定待预测图像文件夹，
+                                点击开始推理。输出的 LabelMe JSON 文件可直接用于复核或二次标注。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tip-box success">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>快速验证：</strong>建议先用 20-50 张标注图像进行快速训练（20-30 epochs），
+                        验证标注质量和参数设置是否合理，再进行完整训练。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 环境配置 -->
+            <section id="environment" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">⚙️</div>
+                    <h2>环境配置</h2>
+                </div>
+                
+                <h3>系统要求</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>配置项</th>
+                                <th>最低要求</th>
+                                <th>推荐配置</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>操作系统</strong></td>
+                                <td>Windows 10 / Ubuntu 18.04</td>
+                                <td>Windows 11 / Ubuntu 22.04</td>
+                            </tr>
+                            <tr>
+                                <td><strong>GPU</strong></td>
+                                <td>NVIDIA GTX 1060 6GB</td>
+                                <td>NVIDIA RTX 3080 10GB+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CUDA</strong></td>
+                                <td>11.3+</td>
+                                <td>11.8 / 12.1</td>
+                            </tr>
+                            <tr>
+                                <td><strong>内存</strong></td>
+                                <td>16GB</td>
+                                <td>32GB+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Python</strong></td>
+                                <td>3.8+</td>
+                                <td>3.10 / 3.11</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>GPU显存推荐</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>模型规格</th>
+                                <th>参数量</th>
+                                <th>batch_size=4</th>
+                                <th>batch_size=8</th>
+                                <th>batch_size=16</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>超小 (B0)</strong></td>
+                                <td>3.7M</td>
+                                <td>4GB</td>
+                                <td>6GB</td>
+                                <td>10GB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>小 (B1)</strong></td>
+                                <td>13.7M</td>
+                                <td>5GB</td>
+                                <td>8GB</td>
+                                <td>14GB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>中 (B2) ⭐</strong></td>
+                                <td>24.7M</td>
+                                <td>6GB</td>
+                                <td>10GB</td>
+                                <td>18GB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>大 (B3)</strong></td>
+                                <td>44.6M</td>
+                                <td>8GB</td>
+                                <td>14GB</td>
+                                <td>24GB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>超大 (B4)</strong></td>
+                                <td>61.4M</td>
+                                <td>10GB</td>
+                                <td>18GB</td>
+                                <td>32GB</td>
+                            </tr>
+                            <tr>
+                                <td><strong>超超大 (B5)</strong></td>
+                                <td>82.0M</td>
+                                <td>12GB</td>
+                                <td>22GB</td>
+                                <td>40GB</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="tip-box info">
+                    <span class="tip-icon">💡</span>
+                    <span class="tip-content">显存估算基于 512×512 输入尺寸、FP16 混合精度训练。实际占用可能因系统环境有所差异。</span>
+                </p>
+                
+                <h3>依赖安装</h3>
+                <p>语义分割模块基于 MMSegmentation 框架，需要安装以下依赖：</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Bash</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-bash"># 方式1：使用 OpenMIM 安装（推荐）
+pip install -U openmim
+mim install mmengine
+mim install "mmcv>=2.0.0"
+mim install mmsegmentation
+
+# 方式2：使用 pip 直接安装
+pip install mmengine mmcv mmsegmentation
+
+# 验证安装
+python -c "import mmseg; print(mmseg.__version__)"</code></pre>
+                </div>
+                
+                <div class="tip-box warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <strong>注意：</strong>MMCV 版本必须与 PyTorch 和 CUDA 版本匹配。
+                        如果安装失败，请参考 <a href="https://mmcv.readthedocs.io/en/latest/get_started/installation.html" target="_blank" style="color: var(--accent-orange);">MMCV 官方安装指南</a>。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- LabelMe格式 -->
+            <section id="labelme-format" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">📁</div>
+                    <h2>LabelMe 格式说明</h2>
+                </div>
+                
+                <h3>数据目录结构</h3>
+                <p>训练数据需要按以下结构组织：</p>
+                <div class="file-tree">
+                    <span class="folder">📁 project/</span><br>
+                    <span class="folder">├── 📁 images/</span> <span class="comment"># 原始图像文件夹</span><br>
+                    │   ├── <span class="file">001.jpg</span><br>
+                    │   ├── <span class="file">002.jpg</span><br>
+                    │   ├── <span class="file">003.png</span> <span class="comment"># 支持多种格式</span><br>
+                    │   └── <span class="file">004.jpg</span> <span class="comment"># 可以没有对应JSON（良品/负样本）</span><br>
+                    <span class="folder">└── 📁 jsons/</span> <span class="comment"># LabelMe JSON文件夹</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">001.json</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;├── <span class="file">002.json</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;└── <span class="file">003.json</span>
+                </div>
+                
+                <h3>JSON 文件结构</h3>
+                <p>LabelMe 生成的 JSON 文件包含图像信息和多边形标注：</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">JSON</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-json">{
+  "version": "5.2.1",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "0",           // 必须是数字字符串！表示类别ID
+      "points": [             // 多边形顶点坐标
+        [120.5, 80.2],
+        [180.3, 75.8],
+        [200.1, 150.6],
+        [150.0, 180.4],
+        [100.2, 120.5]
+      ],
+      "group_id": null,
+      "shape_type": "polygon", // 必须是 polygon
+      "flags": {}
+    },
+    {
+      "label": "1",           // 另一个类别
+      "points": [...],
+      "shape_type": "polygon",
+      "flags": {}
+    }
+  ],
+  "imagePath": "001.jpg",
+  "imageData": null,          // 建议设为null减小文件体积
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}</code></pre>
+                </div>
+                
+                <div class="tip-box danger">
+                    <div class="tip-icon">🚨</div>
+                    <div class="tip-content">
+                        <strong>重要：标签必须是数字！</strong><br>
+                        LabelMe 默认使用文字标签，但本模块<strong>只支持数字标签</strong>（0, 1, 2...）。
+                        请在 LabelMe 中直接输入数字作为标签名，或使用脚本批量转换。
+                    </div>
+                </div>
+                
+                <h3>类别ID规则</h3>
+                <ul>
+                    <li><strong>背景：</strong>像素值 255，不需要标注，自动处理</li>
+                    <li><strong>类别ID：</strong>从 0 开始连续编号（0, 1, 2...）</li>
+                    <li><strong>类别数：</strong>不含背景，只计算实际标注的类别数量</li>
+                </ul>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>示例：</strong>如果你有"划痕"、"凹坑"、"脏污"三种缺陷，
+                        则标签应设为 0、1、2，类别数设为 3。
+                    </div>
+                </div>
+                
+                <h3>负样本（良品）</h3>
+                <p>
+                    没有缺陷的图像（良品）可以作为负样本参与训练，只需将图像放入 <code>images/</code> 文件夹，
+                    <strong>不创建对应的 JSON 文件</strong>即可。系统会自动识别并生成全背景的 Mask。
+                </p>
+            </section>
+            
+            <!-- 标注技巧 -->
+            <section id="annotation-tips" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">✏️</div>
+                    <h2>标注技巧</h2>
+                </div>
+                
+                <h3>标注质量标准</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">✅</div>
+                        <h4>边界精确</h4>
+                        <p>多边形顶点应紧贴缺陷边缘，不要留太多空白，也不要包含正常区域。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">✅</div>
+                        <h4>完整覆盖</h4>
+                        <p>确保缺陷区域被完全覆盖，不要遗漏任何部分，尤其是边缘细节。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-green-dim);">✅</div>
+                        <h4>类别一致</h4>
+                        <p>同类型缺陷使用相同的标签ID，不同类型使用不同ID，保持标准统一。</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon" style="background: var(--accent-red-dim);">❌</div>
+                        <h4>避免重叠</h4>
+                        <p>同一图像中的多边形尽量不要重叠，重叠区域会被后绘制的类别覆盖。</p>
+                    </div>
+                </div>
+                
+                <h3>数据集规模建议</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>任务复杂度</th>
+                                <th>类别数</th>
+                                <th>每类样本数</th>
+                                <th>总样本数</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>简单任务</strong>（单一缺陷类型）</td>
+                                <td>1-2</td>
+                                <td>100+</td>
+                                <td>200+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>中等任务</strong>（多种缺陷类型）</td>
+                                <td>3-5</td>
+                                <td>200+</td>
+                                <td>800+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>复杂任务</strong>（细粒度分类）</td>
+                                <td>5-10</td>
+                                <td>300+</td>
+                                <td>2000+</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>数据增强策略</h3>
+                <p>当标注数据有限时，可以通过以下方式扩充数据：</p>
+                <ul>
+                    <li><strong>训练时增强：</strong>开启水平/垂直翻转、随机旋转、颜色抖动等选项</li>
+                    <li><strong>离线增强：</strong>使用 Albumentations 等工具预处理数据</li>
+                    <li><strong>负样本补充：</strong>添加足够的良品图像，建议负样本占比 20-30%</li>
+                </ul>
+            </section>
+            
+            <!-- 自动转换 -->
+            <section id="auto-convert" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">🔄</div>
+                    <h2>自动数据转换</h2>
+                </div>
+                
+                <p>
+                    点击"开始训练"后，系统会自动将 LabelMe 格式转换为 MMSegmentation 训练格式，
+                    无需手动操作。
+                </p>
+                
+                <h3>转换流程</h3>
+                <div class="architecture-diagram">
+                    <div class="arch-flow">
+                        <div class="arch-box input">📁 images/<br>📁 jsons/</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">🔄 JSON解析<br>多边形→Mask</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">📊 划分数据集<br>train/val</div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box output">📁 dataset/<br>MMSeg格式</div>
+                    </div>
+                </div>
+                
+                <h3>输出目录结构</h3>
+                <div class="file-tree">
+                    <span class="folder">📁 dataset/</span><br>
+                    <span class="folder">├── 📁 images/</span><br>
+                    │   ├── <span class="folder">📁 train/</span> <span class="comment"># 训练集图像</span><br>
+                    │   └── <span class="folder">📁 val/</span> <span class="comment"># 验证集图像</span><br>
+                    <span class="folder">├── 📁 masks/</span><br>
+                    │   ├── <span class="folder">📁 train/</span> <span class="comment"># 训练集Mask（PNG格式）</span><br>
+                    │   └── <span class="folder">📁 val/</span> <span class="comment"># 验证集Mask</span><br>
+                    <span class="folder">├── 📁 splits/</span><br>
+                    │   ├── <span class="file">train.txt</span> <span class="comment"># 训练集文件列表</span><br>
+                    │   └── <span class="file">val.txt</span> <span class="comment"># 验证集文件列表</span><br>
+                    └── <span class="file">class_info.txt</span> <span class="comment"># 类别信息统计</span>
+                </div>
+                
+                <h3>Mask文件说明</h3>
+                <p>
+                    转换后的 Mask 是单通道 PNG 图像，每个像素的值代表其类别ID：
+                </p>
+                <ul>
+                    <li><strong>像素值 0-254：</strong>对应类别ID 0-254</li>
+                    <li><strong>像素值 255：</strong>背景（ignore_index），不参与损失计算</li>
+                </ul>
+            </section>
+            
+            <!-- 模型库 -->
+            <section id="model-library" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">🏛️</div>
+                    <h2>模型库</h2>
+                </div>
+                
+                <p>
+                    语义分割模块提供 6 种不同规格的 SegFormer 模型，均基于 ImageNet-1K 预训练权重。
+                    SegFormer 采用 Mix Transformer (MiT) 作为编码器，具有高效的多尺度特征提取能力。
+                </p>
+                
+                <div class="model-grid">
+                    <div class="model-card">
+                        <div class="model-name">SegFormer B0</div>
+                        <div class="model-backbone">Backbone: MiT-B0</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">3.7M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">最快</span></div>
+                        </div>
+                        <div class="model-desc">最轻量级，适合边缘设备部署，资源受限场景首选。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">SegFormer B1</div>
+                        <div class="model-backbone">Backbone: MiT-B1</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">13.7M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">很快</span></div>
+                        </div>
+                        <div class="model-desc">轻量级，平衡速度与精度，适合实时应用场景。</div>
+                    </div>
+                    
+                    <div class="model-card recommended">
+                        <div class="model-name">SegFormer B2</div>
+                        <div class="model-backbone">Backbone: MiT-B2</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">24.7M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">快</span></div>
+                        </div>
+                        <div class="model-desc">性价比最高，工业首选！在精度和速度之间取得最佳平衡。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">SegFormer B3</div>
+                        <div class="model-backbone">Backbone: MiT-B3</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">44.6M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">中等</span></div>
+                        </div>
+                        <div class="model-desc">高精度，适合复杂场景和细粒度分割任务。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">SegFormer B4</div>
+                        <div class="model-backbone">Backbone: MiT-B4</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">61.4M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">较慢</span></div>
+                        </div>
+                        <div class="model-desc">更高精度，需要较大显存，适合对精度要求极高的场景。</div>
+                    </div>
+                    
+                    <div class="model-card">
+                        <div class="model-name">SegFormer B5</div>
+                        <div class="model-backbone">Backbone: MiT-B5</div>
+                        <div class="model-stats">
+                            <div class="model-stat">📦 参数量: <span class="model-stat-value">82.0M</span></div>
+                            <div class="model-stat">⚡ 速度: <span class="model-stat-value">最慢</span></div>
+                        </div>
+                        <div class="model-desc">最高精度，需要大显存（24GB+），追求极致效果。</div>
+                    </div>
+                </div>
+                
+                <h3>模型架构详情</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>模型</th>
+                                <th>Embed Dims</th>
+                                <th>Num Heads</th>
+                                <th>Depths</th>
+                                <th>参数量</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>B0 (超小)</strong></td>
+                                <td>[32, 64, 160, 256]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[2, 2, 2, 2]</td>
+                                <td>3.7M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B1 (小)</strong></td>
+                                <td>[64, 128, 320, 512]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[2, 2, 2, 2]</td>
+                                <td>13.7M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B2 (中) ⭐</strong></td>
+                                <td>[64, 128, 320, 512]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[3, 4, 6, 3]</td>
+                                <td>24.7M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B3 (大)</strong></td>
+                                <td>[64, 128, 320, 512]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[3, 4, 18, 3]</td>
+                                <td>44.6M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B4 (超大)</strong></td>
+                                <td>[64, 128, 320, 512]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[3, 8, 27, 3]</td>
+                                <td>61.4M</td>
+                            </tr>
+                            <tr>
+                                <td><strong>B5 (超超大)</strong></td>
+                                <td>[64, 128, 320, 512]</td>
+                                <td>[1, 2, 5, 8]</td>
+                                <td>[3, 6, 40, 3]</td>
+                                <td>82.0M</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>选型建议：</strong>
+                        一般场景推荐 <strong>B2</strong>，在精度和速度之间取得最佳平衡；
+                        边缘部署选 <strong>B0/B1</strong>；追求极致精度选 <strong>B4/B5</strong>。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 训练参数 -->
+            <section id="train-params" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">🎛️</div>
+                    <h2>训练参数</h2>
+                </div>
+                
+                <h3>基础参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>范围</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>epochs</strong></td>
+                                <td class="param-default">100</td>
+                                <td class="param-range">10-500</td>
+                                <td>训练轮数。小数据集可设100-200，大数据集可设300+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>batch_size</strong></td>
+                                <td class="param-default">8</td>
+                                <td class="param-range">1-32</td>
+                                <td>批次大小。受显存限制，RTX 3080推荐8-16</td>
+                            </tr>
+                            <tr>
+                                <td><strong>img_size</strong></td>
+                                <td class="param-default">512</td>
+                                <td class="param-range">512/640/768/1024</td>
+                                <td>输入尺寸。越大精度越高，但显存占用更多</td>
+                            </tr>
+                            <tr>
+                                <td><strong>learning_rate</strong></td>
+                                <td class="param-default">6e-5</td>
+                                <td class="param-range">1e-6 ~ 1e-3</td>
+                                <td>初始学习率。使用预训练权重时建议较小值</td>
+                            </tr>
+                            <tr>
+                                <td><strong>val_split</strong></td>
+                                <td class="param-default">0.2</td>
+                                <td class="param-range">0.1-0.3</td>
+                                <td>验证集比例。建议0.2（20%用于验证）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>patience</strong></td>
+                                <td class="param-default">20</td>
+                                <td class="param-range">10-50</td>
+                                <td>早停耐心值。连续N个epoch无改善则停止</td>
+                            </tr>
+                            <tr>
+                                <td><strong>save_period</strong></td>
+                                <td class="param-default">10</td>
+                                <td class="param-range">5-50</td>
+                                <td>模型保存周期。每N个epoch保存一次</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>高级参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>范围</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>weight_decay</strong></td>
+                                <td class="param-default">0.01</td>
+                                <td class="param-range">0-0.1</td>
+                                <td>权重衰减（L2正则化），防止过拟合</td>
+                            </tr>
+                            <tr>
+                                <td><strong>warmup_iters</strong></td>
+                                <td class="param-default">500</td>
+                                <td class="param-range">0-2000</td>
+                                <td>学习率预热迭代数，从0线性增长到初始学习率</td>
+                            </tr>
+                            <tr>
+                                <td><strong>use_fp16</strong></td>
+                                <td class="param-default">True</td>
+                                <td class="param-range">True/False</td>
+                                <td>混合精度训练，可节省约40%显存并加速训练</td>
+                            </tr>
+                            <tr>
+                                <td><strong>include_negative</strong></td>
+                                <td class="param-default">True</td>
+                                <td class="param-range">True/False</td>
+                                <td>是否包含负样本（良品图像）参与训练</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- 损失函数 -->
+            <section id="loss-functions" class="section">
+                <div class="section-header">
+                    <div class="section-icon pink">📊</div>
+                    <h2>损失函数</h2>
+                </div>
+                
+                <p>
+                    本模块采用 <strong>CrossEntropy Loss + Dice Loss</strong> 组合损失函数，
+                    兼顾像素级分类准确性和区域形状相似度。
+                </p>
+                
+                <h3>损失函数参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>loss_ce_weight</strong></td>
+                                <td class="param-default">0.4</td>
+                                <td>CrossEntropy损失权重。擅长像素级分类</td>
+                            </tr>
+                            <tr>
+                                <td><strong>loss_dice_weight</strong></td>
+                                <td class="param-default">0.6</td>
+                                <td>Dice损失权重。擅长处理类别不平衡和形状匹配</td>
+                            </tr>
+                            <tr>
+                                <td><strong>use_class_weight</strong></td>
+                                <td class="param-default">True</td>
+                                <td>是否使用类别权重。自动计算各类别权重缓解不平衡</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>损失函数说明</h3>
+                <div class="feature-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-blue-dim);">📐</div>
+                            <h4>CrossEntropy Loss</h4>
+                        </div>
+                        <p style="font-size: 14px; color: var(--text-secondary);">
+                            标准的像素级分类损失，计算每个像素的分类损失并求平均。
+                            对边界细节敏感，是语义分割的基础损失函数。
+                        </p>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon" style="background: var(--accent-purple-dim);">🎯</div>
+                            <h4>Dice Loss</h4>
+                        </div>
+                        <p style="font-size: 14px; color: var(--text-secondary);">
+                            基于Dice系数的损失函数，衡量预测区域与真实区域的重叠度。
+                            对类别不平衡不敏感，适合小目标分割。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>调参建议：</strong>
+                        默认参数 (CE:0.4, Dice:0.6) 适合大多数场景。
+                        如果边界不够精细，可增加 CE 权重；如果小目标漏检，可增加 Dice 权重。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 数据增强 -->
+            <section id="data-augmentation" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">🎲</div>
+                    <h2>数据增强</h2>
+                </div>
+                
+                <p>
+                    数据增强是提升模型泛化能力的重要手段。本模块支持多种在线数据增强方式。
+                </p>
+                
+                <h3>增强参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数名</th>
+                                <th>默认值</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>flip_horizontal</strong></td>
+                                <td class="param-default">True</td>
+                                <td>随机水平翻转（50%概率）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>flip_vertical</strong></td>
+                                <td class="param-default">True</td>
+                                <td>随机垂直翻转（50%概率）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>random_rotate</strong></td>
+                                <td class="param-default">True</td>
+                                <td>随机旋转</td>
+                            </tr>
+                            <tr>
+                                <td><strong>rotate_degree</strong></td>
+                                <td class="param-default">30.0</td>
+                                <td>最大旋转角度（±度数）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>color_jitter</strong></td>
+                                <td class="param-default">True</td>
+                                <td>颜色抖动（亮度、对比度、饱和度随机调整）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>scale_range</strong></td>
+                                <td class="param-default">(0.5, 2.0)</td>
+                                <td>随机缩放范围</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tip-box warning">
+                    <div class="tip-icon">⚠️</div>
+                    <div class="tip-content">
+                        <strong>注意：</strong>
+                        如果目标有明确的方向性（如文字、特定朝向的零件），建议关闭 <code>flip_vertical</code> 和 <code>random_rotate</code>，
+                        以免引入不合理的训练样本。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 训练过程 -->
+            <section id="training-process" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">📈</div>
+                    <h2>训练过程</h2>
+                </div>
+                
+                <h3>实时监控</h3>
+                <p>训练过程中，界面会实时显示以下信息：</p>
+                <ul>
+                    <li><strong>Loss曲线：</strong>显示训练损失的下降趋势</li>
+                    <li><strong>mIoU曲线：</strong>显示验证集平均IoU的提升趋势</li>
+                    <li><strong>各类别IoU：</strong>显示每个类别的IoU指标</li>
+                    <li><strong>分割预览：</strong>显示当前模型在验证图像上的分割效果</li>
+                    <li><strong>训练日志：</strong>详细的训练过程日志</li>
+                </ul>
+                
+                <h3>日志解读</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">训练日志示例</span>
+                    </div>
+                    <pre><code>[14:35:22] Epoch 50/100 | Loss: 0.2134 | mIoU: 0.7856 | mDice: 0.8612 | Best: 0.7923 @ E45
+[14:35:22] Per-class IoU: {0: 0.8234, 1: 0.7478}
+[14:35:23] 📦 已保存周期模型: weights/epoch_50.pth</code></pre>
+                </div>
+                
+                <h3>常见问题排查</h3>
+                <div class="faq-item">
+                    <div class="faq-question">Loss不下降或震荡严重</div>
+                    <div class="faq-answer">
+                        <strong>可能原因：</strong>学习率过大。<br>
+                        <strong>解决方案：</strong>降低学习率到 1e-5 或 3e-5，或增加 warmup_iters。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">mIoU提升后又下降（过拟合）</div>
+                    <div class="faq-answer">
+                        <strong>可能原因：</strong>训练轮数过多或数据量不足。<br>
+                        <strong>解决方案：</strong>减少epochs、增加weight_decay、开启更多数据增强、添加更多训练数据。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">某类别IoU始终为0</div>
+                    <div class="faq-answer">
+                        <strong>可能原因：</strong>该类别样本过少或标注有误。<br>
+                        <strong>解决方案：</strong>检查标注是否正确、增加该类别样本数量、开启use_class_weight。
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">CUDA内存不足</div>
+                    <div class="faq-answer">
+                        <strong>解决方案：</strong>减小batch_size、减小img_size、使用更小的模型规格、确保use_fp16开启。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 模型权重 -->
+            <section id="checkpoint" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">💾</div>
+                    <h2>模型权重</h2>
+                </div>
+                
+                <h3>权重文件格式</h3>
+                <p>训练输出的权重文件为 PyTorch 格式（<code>.pth</code>），包含以下信息：</p>
+                <ul>
+                    <li><strong>state_dict：</strong>模型权重参数</li>
+                    <li><strong>meta：</strong>元数据信息（类别数、类别名、输入尺寸等）</li>
+                    <li><strong>config：</strong>模型配置信息</li>
+                </ul>
+                
+                <h3>保存的模型</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>best_model.pth</code></td>
+                                <td>验证集mIoU最高的模型（推荐用于部署）</td>
+                            </tr>
+                            <tr>
+                                <td><code>last_model.pth</code></td>
+                                <td>最后一个epoch的模型</td>
+                            </tr>
+                            <tr>
+                                <td><code>epoch_N.pth</code></td>
+                                <td>第N个epoch的模型（周期性保存）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- 输出结构 -->
+            <section id="output-structure" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">📂</div>
+                    <h2>输出目录结构</h2>
+                </div>
+                
+                <p>训练完成后，所有输出文件保存在以时间戳命名的目录中：</p>
+                <div class="file-tree">
+                    <span class="folder">📁 output/SegFormer_20250130_143522/</span><br>
+                    <span class="folder">├── 📁 dataset/</span> <span class="comment"># 转换后的训练数据</span><br>
+                    │   ├── <span class="folder">📁 images/</span><br>
+                    │   ├── <span class="folder">📁 masks/</span><br>
+                    │   └── <span class="folder">📁 splits/</span><br>
+                    <span class="folder">├── 📁 weights/</span> <span class="comment"># 模型权重</span><br>
+                    │   ├── <span class="file">best_model.pth</span><br>
+                    │   ├── <span class="file">last_model.pth</span><br>
+                    │   ├── <span class="file">epoch_10.pth</span><br>
+                    │   └── <span class="file">config.py</span> <span class="comment"># 推理配置文件</span><br>
+                    <span class="folder">├── 📁 work_dirs/</span> <span class="comment"># MMSeg工作目录</span><br>
+                    ├── <span class="file">config.py</span> <span class="comment"># 完整配置文件</span><br>
+                    ├── <span class="file">model_metadata.json</span> <span class="comment"># 模型元数据</span><br>
+                    └── <span class="file">training.log</span> <span class="comment"># 训练日志</span>
+                </div>
+                
+                <h3>元数据文件</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">model_metadata.json</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-json">{
+  "framework": "mmsegmentation",
+  "model_type": "segformer",
+  "model_name": "segformer_b2",
+  "num_classes": 3,
+  "class_names": ["0", "1", "2"],
+  "img_size": 512,
+  "input_spec": {
+    "shape": [1, 3, 512, 512],
+    "color_format": "RGB",
+    "normalize_method": "imagenet",
+    "normalize_mean": [123.675, 116.28, 103.53],
+    "normalize_std": [58.395, 57.12, 57.375]
+  },
+  "metrics": {
+    "best_mIoU": 0.8234,
+    "best_epoch": 85
+  }
+}</code></pre>
+                </div>
+            </section>
+            
+            <!-- 评估指标 -->
+            <section id="metrics" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">📊</div>
+                    <h2>评估指标</h2>
+                </div>
+                
+                <p>语义分割任务使用以下核心指标评估模型性能：</p>
+                
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: var(--accent-purple-dim);">📐</div>
+                    <div>
+                        <div class="metric-name">mIoU (Mean Intersection over Union)</div>
+                        <div class="metric-desc">
+                            所有类别IoU的平均值，是语义分割最核心的指标。计算每个类别预测区域与真实区域的交并比，然后取平均。
+                            范围0-1，越高越好，通常0.7以上可用于生产。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: var(--accent-blue-dim);">🎯</div>
+                    <div>
+                        <div class="metric-name">mDice (Mean Dice Coefficient)</div>
+                        <div class="metric-desc">
+                            所有类别Dice系数的平均值。Dice系数衡量预测与真实的重叠程度，对小目标更敏感。
+                            范围0-1，通常比mIoU略高。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: var(--accent-green-dim);">✅</div>
+                    <div>
+                        <div class="metric-name">mAcc (Mean Accuracy)</div>
+                        <div class="metric-desc">
+                            所有类别像素准确率的平均值。计算每个类别中正确预测的像素比例。
+                            范围0-1，容易受类别不平衡影响。
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-icon" style="background: var(--accent-orange-dim);">📉</div>
+                    <div>
+                        <div class="metric-name">Loss</div>
+                        <div class="metric-desc">
+                            训练损失值，由CrossEntropy Loss和Dice Loss加权求和。
+                            越低越好，但需关注验证集指标以防过拟合。
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>IoU计算公式</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">公式说明</span>
+                    </div>
+                    <pre><code>IoU = TP / (TP + FP + FN)
+
+其中：
+- TP (True Positive): 正确预测为该类别的像素数
+- FP (False Positive): 错误预测为该类别的像素数
+- FN (False Negative): 漏检的该类别像素数
+
+mIoU = (1/N) × Σ IoU_i  (N为类别数)</code></pre>
+                </div>
+            </section>
+            
+            <!-- 模型转换概览 -->
+            <section id="conversion-overview" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">🔧</div>
+                    <h2>模型转换概览</h2>
+                </div>
+                
+                <p>
+                    训练完成后，可以将 PyTorch 模型转换为其他推理框架格式，以获得更好的推理性能。
+                </p>
+                
+                <h3>支持的目标格式</h3>
+                <div class="table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>格式</th>
+                                <th>适用场景</th>
+                                <th>加速比</th>
+                                <th>依赖</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>TensorRT</strong></td>
+                                <td>NVIDIA GPU部署</td>
+                                <td>2-5x</td>
+                                <td>TensorRT 8.x+</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ONNX Runtime</strong></td>
+                                <td>跨平台（GPU/CPU）</td>
+                                <td>1.5-3x</td>
+                                <td>onnxruntime</td>
+                            </tr>
+                            <tr>
+                                <td><strong>OpenVINO</strong></td>
+                                <td>Intel硬件</td>
+                                <td>2-4x</td>
+                                <td>openvino</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- 精度选择 -->
+            <section id="precision" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">🎯</div>
+                    <h2>精度选择</h2>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>精度模式</th>
+                                <th>说明</th>
+                                <th>速度提升</th>
+                                <th>精度影响</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>FP32</strong></td>
+                                <td>单精度浮点，无损转换</td>
+                                <td>基准</td>
+                                <td>无损失</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FP16</strong> ⭐</td>
+                                <td>半精度浮点，推荐选择</td>
+                                <td>50-100%</td>
+                                <td>几乎无损</td>
+                            </tr>
+                            <tr>
+                                <td><strong>INT8</strong></td>
+                                <td>8位整数量化，需要校准数据</td>
+                                <td>100-200%</td>
+                                <td>轻微下降</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mixed</strong></td>
+                                <td>混合精度，敏感层用FP16</td>
+                                <td>80-150%</td>
+                                <td>接近无损</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="tip-box success">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <strong>推荐：</strong>一般情况下使用 <strong>FP16</strong> 精度，
+                        在速度和精度之间取得最佳平衡，且不需要额外的校准数据。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- TensorRT -->
+            <section id="tensorrt" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">⚡</div>
+                    <h2>TensorRT 转换</h2>
+                </div>
+                
+                <p>
+                    TensorRT 是 NVIDIA 的高性能深度学习推理引擎，可以显著加速 GPU 上的推理速度。
+                </p>
+                
+                <h3>INT8 校准</h3>
+                <p>如果选择 INT8 或 Mixed 精度，需要提供校准数据集：</p>
+                <ul>
+                    <li>准备 100-500 张有代表性的图像</li>
+                    <li>图像应覆盖各种场景和类别</li>
+                    <li>放入单独的文件夹，在转换时指定路径</li>
+                </ul>
+                
+                <h3>参数说明</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>默认值</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>workspace_gb</strong></td>
+                                <td class="param-default">4</td>
+                                <td>TensorRT工作空间大小（GB），越大优化越充分</td>
+                            </tr>
+                            <tr>
+                                <td><strong>dynamic_batch</strong></td>
+                                <td class="param-default">True</td>
+                                <td>是否支持动态批次大小</td>
+                            </tr>
+                            <tr>
+                                <td><strong>min_batch</strong></td>
+                                <td class="param-default">1</td>
+                                <td>最小批次大小</td>
+                            </tr>
+                            <tr>
+                                <td><strong>opt_batch</strong></td>
+                                <td class="param-default">1</td>
+                                <td>优化目标批次大小（推理时最常用的批次）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>max_batch</strong></td>
+                                <td class="param-default">4</td>
+                                <td>最大批次大小</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- ONNX Runtime -->
+            <section id="onnx" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">📦</div>
+                    <h2>ONNX Runtime</h2>
+                </div>
+                
+                <p>
+                    ONNX Runtime 是微软开源的跨平台推理引擎，支持多种硬件后端。
+                </p>
+                
+                <h3>推理代码示例</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-python">import numpy as np
+import onnxruntime as ort
+from PIL import Image
+
+# 加载模型
+session = ort.InferenceSession("model.onnx", providers=['CUDAExecutionProvider'])
+
+# 预处理
+image = Image.open("test.jpg").convert("RGB")
+image = image.resize((512, 512))
+input_data = np.array(image).astype(np.float32)
+input_data = input_data.transpose(2, 0, 1)  # HWC -> CHW
+
+# ImageNet归一化
+mean = np.array([123.675, 116.28, 103.53]).reshape(3, 1, 1)
+std = np.array([58.395, 57.12, 57.375]).reshape(3, 1, 1)
+input_data = (input_data - mean) / std
+input_data = input_data[np.newaxis, ...]  # 添加batch维度
+
+# 推理
+outputs = session.run(None, {"input": input_data})
+mask = outputs[0].argmax(axis=1)[0]  # [H, W]</code></pre>
+                </div>
+            </section>
+            
+            <!-- 批量推理 -->
+            <section id="batch-inference" class="section">
+                <div class="section-header">
+                    <div class="section-icon purple">🔍</div>
+                    <h2>批量推理</h2>
+                </div>
+                
+                <p>
+                    批量推理功能可以对整个文件夹的图像进行分割预测，输出 LabelMe 格式的 JSON 标注文件。
+                </p>
+                
+                <h3>使用步骤</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <div class="step-title">选择模型文件</div>
+                            <div class="step-desc">指定训练好的 <code>.pth</code> 模型文件路径，推荐使用 <code>best_model.pth</code>。</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <div class="step-title">指定图像文件夹</div>
+                            <div class="step-desc">选择包含待预测图像的文件夹路径。</div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <div class="step-title">配置推理参数</div>
+                            <div class="step-desc">
+                                设置最小面积阈值（过滤小区域）、置信度阈值、是否使用滑动窗口。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <div class="step-title">开始推理</div>
+                            <div class="step-desc">点击"开始批量推理"，等待完成后查看输出的 JSON 文件。</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>推理参数</h3>
+                <div class="table-wrapper">
+                    <table class="param-table">
+                        <thead>
+                            <tr>
+                                <th>参数</th>
+                                <th>默认值</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>min_area</strong></td>
+                                <td class="param-default">100</td>
+                                <td>最小区域面积（像素），小于此值的区域会被过滤</td>
+                            </tr>
+                            <tr>
+                                <td><strong>conf_threshold</strong></td>
+                                <td class="param-default">0.0</td>
+                                <td>置信度阈值，低于此值的像素视为背景（0表示不过滤）</td>
+                            </tr>
+                            <tr>
+                                <td><strong>use_sliding_window</strong></td>
+                                <td class="param-default">False</td>
+                                <td>是否使用滑动窗口推理（适用于大图）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>输出格式</h3>
+                <p>推理结果以 LabelMe 格式的 JSON 文件保存，可直接用 LabelMe 打开查看和编辑：</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">JSON (输出示例)</span>
+                    </div>
+                    <pre><code class="language-json">{
+  "version": "5.2.1",
+  "shapes": [
+    {
+      "label": "0",
+      "points": [[120, 80], [180, 75], [200, 150], [150, 180], [100, 120]],
+      "shape_type": "polygon"
+    }
+  ],
+  "imagePath": "test_001.jpg",
+  "imageHeight": 1080,
+  "imageWidth": 1920
+}</code></pre>
+                </div>
+            </section>
+            
+            <!-- 滑动窗口 -->
+            <section id="sliding-window" class="section">
+                <div class="section-header">
+                    <div class="section-icon blue">🪟</div>
+                    <h2>滑动窗口推理</h2>
+                </div>
+                
+                <p>
+                    对于高分辨率图像（如 4000×3000 或更大），直接 Resize 到训练尺寸会导致细节丢失。
+                    滑动窗口推理可以解决这个问题。
+                </p>
+                
+                <h3>工作原理</h3>
+                <div class="architecture-diagram">
+                    <div class="arch-flow">
+                        <div class="arch-box input">🖼️ 大图<br><small>4000×3000</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">✂️ 切分<br><small>重叠切块</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box process">🔮 逐块推理<br><small>512×512</small></div>
+                        <div class="arch-arrow">→</div>
+                        <div class="arch-box output">🧩 拼接<br><small>原始尺寸</small></div>
+                    </div>
+                </div>
+                
+                <h3>适用场景</h3>
+                <ul>
+                    <li><strong>高分辨率工业图像：</strong>如 PCB 板检测、晶圆检测</li>
+                    <li><strong>医学影像：</strong>病理切片、X光片</li>
+                    <li><strong>遥感图像：</strong>卫星图、航拍图</li>
+                    <li><strong>细小缺陷检测：</strong>需要保留原始分辨率才能看清的缺陷</li>
+                </ul>
+                
+                <div class="tip-box info">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <strong>建议：</strong>如果图像分辨率大于训练尺寸的2倍（如训练512，图像大于1024），
+                        建议开启滑动窗口以保留更多细节。
+                    </div>
+                </div>
+            </section>
+            
+            <!-- API使用 -->
+            <section id="api-usage" class="section">
+                <div class="section-header">
+                    <div class="section-icon green">💻</div>
+                    <h2>API 使用</h2>
+                </div>
+                
+                <h3>Python API 推理</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-python">from mmseg.apis import init_model, inference_model
+import numpy as np
+from PIL import Image
+
+# 初始化模型
+config_file = 'output/SegFormer_xxx/config.py'
+checkpoint_file = 'output/SegFormer_xxx/weights/best_model.pth'
+model = init_model(config_file, checkpoint_file, device='cuda:0')
+
+# 推理
+result = inference_model(model, 'test.jpg')
+
+# 获取分割结果
+seg_mask = result.pred_sem_seg.data.cpu().numpy()[0]  # [H, W]
+
+# 可视化
+from mmseg.apis import show_result_pyplot
+show_result_pyplot(model, 'test.jpg', result, out_file='result.jpg')</code></pre>
+                </div>
+                
+                <h3>自定义推理流程</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="code-copy" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-python">import torch
+import numpy as np
+from PIL import Image
+from mmseg.apis import init_model
+
+# 加载模型
+model = init_model('config.py', 'best_model.pth', device='cuda:0')
+model.eval()
+
+# 预处理函数
+def preprocess(image_path, size=512):
+    img = Image.open(image_path).convert('RGB')
+    img = img.resize((size, size))
+    img_array = np.array(img).astype(np.float32)
+    
+    # ImageNet归一化
+    mean = np.array([123.675, 116.28, 103.53])
+    std = np.array([58.395, 57.12, 57.375])
+    img_array = (img_array - mean) / std
+    
+    # HWC -> CHW -> NCHW
+    img_tensor = torch.from_numpy(img_array.transpose(2, 0, 1))
+    img_tensor = img_tensor.unsqueeze(0).float().cuda()
+    return img_tensor
+
+# 推理
+with torch.no_grad():
+    input_tensor = preprocess('test.jpg')
+    output = model.encode_decode(input_tensor, None)
+    mask = output.argmax(dim=1).cpu().numpy()[0]
+
+# mask 是 [H, W] 的numpy数组，值为类别ID</code></pre>
+                </div>
+            </section>
+            
+            <!-- 部署指南 -->
+            <section id="deployment" class="section">
+                <div class="section-header">
+                    <div class="section-icon orange">🚢</div>
+                    <h2>部署指南</h2>
+                </div>
+                
+                <h3>部署场景选择</h3>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>场景</th>
+                                <th>推荐方案</th>
+                                <th>模型格式</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>NVIDIA GPU 服务器</strong></td>
+                                <td>TensorRT + Triton</td>
+                                <td>.engine (TRT)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>边缘设备 (Jetson)</strong></td>
+                                <td>TensorRT</td>
+                                <td>.engine (TRT)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Intel CPU/GPU</strong></td>
+                                <td>OpenVINO</td>
+                                <td>.xml + .bin</td>
+                            </tr>
+                            <tr>
+                                <td><strong>跨平台部署</strong></td>
+                                <td>ONNX Runtime</td>
+                                <td>.onnx</td>
+                            </tr>
+                            <tr>
+                                <td><strong>快速原型/测试</strong></td>
+                                <td>PyTorch 原生</td>
+                                <td>.pth</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3>部署检查清单</h3>
+                <ul>
+                    <li>✅ 确认模型在验证集上的指标达到预期</li>
+                    <li>✅ 使用测试图像验证推理输出正确</li>
+                    <li>✅ 根据目标平台选择合适的模型格式</li>
+                    <li>✅ 测试转换后模型的精度是否下降</li>
+                    <li>✅ 测量推理延迟，确保满足实时性要求</li>
+                    <li>✅ 准备异常处理和日志记录机制</li>
+                </ul>
+            </section>
+            
+            <!-- FAQ -->
+            <section id="faq" class="section">
+                <div class="section-header">
+                    <div class="section-icon pink">❓</div>
+                    <h2>常见问题</h2>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">标签必须是数字吗？能用文字标签吗？</div>
+                    <div class="faq-answer">
+                        是的，<strong>必须使用数字标签</strong>（0, 1, 2...）。如果已有文字标签的数据，
+                        需要先编写脚本将标签转换为数字。建议维护一个类别映射表（如：划痕=0, 凹坑=1）。
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">mIoU一直是0怎么办？</div>
+                    <div class="faq-answer">
+                        <strong>可能原因：</strong><br>
+                        1. 类别数设置错误：检查设置的类别数是否与实际标注的类别一致<br>
+                        2. 标签ID超出范围：如果设置类别数为3，但标注中有标签"5"，则会被忽略<br>
+                        3. 标签不是数字：检查JSON中的label字段是否为数字字符串<br>
+                        4. 数据路径错误：确认图像和JSON文件能正确配对
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">类别不平衡（某类样本很少）怎么处理？</div>
+                    <div class="faq-answer">
+                        1. 开启 <code>use_class_weight</code> 选项，自动计算类别权重<br>
+                        2. 增加 Dice Loss 权重（如 CE:0.3, Dice:0.7）<br>
+                        3. 对少数类别进行过采样或数据增强<br>
+                        4. 收集更多该类别的样本
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">TensorRT转换失败怎么办？</div>
+                    <div class="faq-answer">
+                        1. 检查TensorRT版本是否与CUDA版本匹配<br>
+                        2. 尝试降低workspace_gb参数<br>
+                        3. 先转换为ONNX格式，再用trtexec工具转换<br>
+                        4. 检查模型中是否有不支持的算子
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">小目标检测效果差怎么办？</div>
+                    <div class="faq-answer">
+                        1. 增大 img_size（如 768 或 1024）<br>
+                        2. 使用滑动窗口推理保留原始分辨率<br>
+                        3. 增加 Dice Loss 权重<br>
+                        4. 确保标注质量，小目标边界要精确<br>
+                        5. 降低 min_area 阈值以保留小区域
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 更新日志 -->
+            <section id="changelog" class="section">
+                <div class="section-header">
+                    <div class="section-icon cyan">📝</div>
+                    <h2>更新日志</h2>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-purple-dim);">🎉</div>
+                        <h4>v2.0.1 (2025年1月)</h4>
+                    </div>
+                    <ul style="font-size: 14px; color: var(--text-secondary);">
+                        <li>新增滑动窗口推理功能，支持大图切片推理</li>
+                        <li>新增置信度阈值过滤功能</li>
+                        <li>优化批量推理输出，支持LabelMe格式JSON</li>
+                        <li>修复config.py保存问题，确保推理时可正确加载</li>
+                        <li>改进训练日志，显示更详细的各类别IoU</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: var(--accent-blue-dim);">🚀</div>
+                        <h4>v2.0.0 (2024年12月)</h4>
+                    </div>
+                    <ul style="font-size: 14px; color: var(--text-secondary);">
+                        <li>集成 DL-Hub 平台，支持统一任务管理</li>
+                        <li>全新 Gradio UI 界面，与目标检测模块风格统一</li>
+                        <li>支持 LabelMe 格式原生输入</li>
+                        <li>新增负样本（良品）支持</li>
+                        <li>新增模型转换功能（TensorRT/ONNX/OpenVINO）</li>
+                        <li>支持 SegFormer B0-B5 全系列模型</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <script>
+        // 代码复制功能
+        function copyCode(btn) {
+            const codeBlock = btn.closest('.code-block').querySelector('code');
+            navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => btn.textContent = '复制', 2000);
+            });
+        }
+        
+        // 代码高亮
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+        });
+        
+        // 导航激活状态
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section[id]');
+        
+        function setActiveNav() {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', setActiveNav);
+        setActiveNav();
+    </script>
+</body>
+</html>

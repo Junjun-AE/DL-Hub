@@ -1,0 +1,324 @@
+# ============================================================================
+# 🎯 模型转换配置文件 - 图像分类任务 (Classification)
+# ============================================================================
+# 
+# 使用方法:
+#   python main.py run -c config_cls.yaml
+#
+# 提示:
+#   - 带 [必填] 的参数必须设置
+#   - 带 [可选] 的参数可以删除或注释掉，使用默认值
+#   - 带 [条件] 的参数只在特定情况下需要
+#
+# ============================================================================
+
+# ============================================================================
+# Stage 1: 模型导入 (Model Import)
+# ============================================================================
+stage1_import:
+  # [必填] 模型文件路径
+  # 支持格式: .pth, .pt, .ckpt, .bin
+  # 支持框架: timm, torchvision, 自定义 PyTorch 模型
+  model_path: "./models/resnet50.pth"
+  
+  # [必填] 任务类型
+  # 可选值: cls (分类), det (检测), seg (分割)
+  task_type: "cls"
+  
+  # [可选] 输入形状 (B, C, H, W)
+  # 分类任务推荐: [1, 3, 224, 224] 或 [1, 3, 384, 384]
+  # 如果不设置，将自动推断
+  input_shape: null
+  
+  # [可选] 推理设备
+  # 可选值: "cuda", "cuda:0", "cuda:1", "cpu"
+  # 默认: 自动选择 (优先 GPU)
+  device: null
+  
+  # [可选] 类别数量
+  # 如果模型无法自动推断，需要手动指定
+  # ImageNet: 1000, CIFAR-10: 10, CIFAR-100: 100
+  num_classes: null
+
+# ============================================================================
+# Stage 2: 模型分析 (Model Analysis)
+# ============================================================================
+stage2_analyze:
+  # [可选] 目标后端列表
+  # 用于兼容性检测，检查模型是否支持目标部署平台
+  # 可选值: onnxruntime, tensorrt, openvino
+  target_backends:
+    - "onnxruntime"
+    - "tensorrt"
+    - "openvino"
+  
+  # [可选] 生成分析报告
+  # 可选值: null (不生成), "console", "json", "html"
+  report_format: "console"
+  
+  # [可选] 报告输出路径
+  # 仅当 report_format 不为 null 时有效
+  report_output: null
+
+# ============================================================================
+# Stage 3: 图优化 (Graph Optimization)
+# ============================================================================
+stage3_optimize:
+  # [可选] 是否启用优化
+  # 强烈建议开启，可显著提升推理性能
+  enabled: true
+  
+  # [可选] Conv + BatchNorm 融合
+  # 将相邻的卷积层和 BatchNorm 层融合为单个卷积层
+  # 可减少约 10-20% 的推理时间
+  # 推荐: true
+  enable_fusion: true
+  
+  # [可选] 冗余层消除
+  # 移除 Dropout、恒等映射等推理时无用的层
+  # 推荐: true
+  enable_elimination: true
+  
+  # [可选] 输出验证
+  # 优化后验证输出是否与原模型一致
+  # 推荐: true (生产环境)
+  verify_output: true
+
+# ============================================================================
+# Stage 4: ONNX 导出 (ONNX Export)
+# ============================================================================
+stage4_export:
+  # [可选] ONNX 输出路径
+  # 如果不设置，自动生成为 {model_name}.onnx
+  output_path: null
+  
+  # [重要] ONNX opset 版本
+  # ============================================================
+  # ⚠️ 兼容性警告:
+  #   - EfficientNet、MobileNetV3 等使用深度可分离卷积的模型
+  #     在 opset >= 18 时可能导致 TensorRT 解析失败
+  #   - 建议这类模型使用 opset 17 或更低版本
+  # ============================================================
+  # 推荐值:
+  #   - opset 17: 推荐！兼容性最佳 (TensorRT 8.5+)
+  #   - opset 13: 广泛兼容 (TensorRT 8.0+)
+  #   - opset 11: 最大兼容性 (TensorRT 7.0+)
+  #   - null: 自动选择 (默认使用 17)
+  # 
+  # 如果遇到 TensorRT "Kernel weight dimension" 错误:
+  #   1. 尝试降低 opset 版本到 13 或 11
+  #   2. 或设置 dynamic_batch: false
+  opset_version: 17
+  
+  # [可选] 启用 ONNX 简化
+  # 使用 onnxsim 简化模型图结构
+  # 推荐: true
+  enable_simplify: true
+  
+  # [可选] 启用导出后验证
+  # 对比 PyTorch 和 ONNX Runtime 输出
+  # 推荐: true
+  enable_validation: true
+  
+  # [重要] 动态 batch
+  # ============================================================
+  # ⚠️ 兼容性警告:
+  #   - EfficientNet、MobileNetV3、MobileNetV2 等模型
+  #     使用深度可分离卷积 (Depthwise Separable Convolution)
+  #   - 当 dynamic_batch=true 时，可能导致 TensorRT 解析失败
+  #   - 错误信息: "Kernel weight dimension failed to broadcast"
+  # ============================================================
+  # 推荐设置:
+  #   - ResNet、VGG、DenseNet 等标准卷积模型: true (可以启用)
+  #   - EfficientNet、MobileNet 系列: false (推荐禁用)
+  #   - 如需批量推理，请在 Stage 5 使用 TensorRT 动态形状配置
+  dynamic_batch: false
+  
+  # [可选] 动态 H/W
+  # 允许运行时改变输入分辨率
+  # 分类任务推荐: false (通常固定分辨率)
+  dynamic_hw: false
+
+# ============================================================================
+# Stage 5-6: 量化转换与验证 (Quantization & Validation)
+# ============================================================================
+stage5_convert:
+  # [必填] 目标后端
+  # 可选值:
+  #   - tensorrt: NVIDIA GPU 高性能推理 (推荐)
+  #   - openvino: Intel CPU/GPU/VPU 推理
+  #   - ort: ONNX Runtime 跨平台推理
+  target_backend: "tensorrt"
+  
+  # [必填] 精度模式
+  # 可选值:
+  #   - fp32: 全精度，无量化，精度最高但最慢
+  #   - fp16: 半精度，推荐大多数场景，速度提升 2x
+  #   - int8: 8位整数量化，速度提升 4x，需要校准数据
+  #   - mixed: 混合精度，敏感层保持高精度
+  # ============================================================
+  # 分类任务推荐:
+  #   - ResNet、VGG 等: fp16 或 int8 均可
+  #   - EfficientNet、MobileNet: fp16 或 mixed (int8 精度损失较大)
+  # ============================================================
+  precision: "fp16"
+  
+  # [条件] 校准数据路径 (INT8/MIXED 量化必需)
+  # 应包含代表性的训练/验证图像
+  # 推荐: 300-1000 张图像
+  calib_data_path: null
+  
+  # [条件] 校准数据格式
+  # 可选值:
+  #   - imagefolder: 文件夹结构 (images/*.jpg)
+  #   - coco: COCO 格式 (images/ + annotations.json)
+  calib_data_format: "imagefolder"
+  
+  # [条件] 校准样本数量
+  # 推荐: 300 (平衡精度和速度)
+  # 更多样本可能提升 INT8 精度，但会增加校准时间
+  calib_num_samples: 300
+  
+  # [条件] 校准方法
+  # 可选值:
+  #   - entropy: 熵校准，精度更高 (推荐)
+  #   - minmax: 最小最大值校准，速度更快
+  #   - percentile: 百分位校准
+  calib_method: "entropy"
+  
+  # [可选] 启用转换后验证
+  # 对比 ONNX 和量化后模型输出
+  # 推荐: true
+  enable_validation: true
+  
+  # [可选] 使用真实数据验证
+  # 使用校准数据进行验证，而非随机数据
+  # 推荐: true (更准确的验证结果)
+  use_real_validation_data: true
+  
+  # [可选] 验证样本数量
+  validation_num_samples: 10
+  
+  # [可选] 启用性能测试
+  # 测量推理延迟和吞吐量
+  # 推荐: true (了解实际性能)
+  enable_perf_test: false
+  
+  # ---------- TensorRT 专用配置 ----------
+  tensorrt:
+    # [可选] 工作空间大小 (GB)
+    # 更大的空间可能找到更优的算法
+    # 推荐: 4 (普通模型), 8+ (大模型)
+    workspace_gb: 4
+    
+    # [可选] Timing Cache 路径
+    # 缓存 TensorRT 优化结果，加速后续构建
+    # 推荐: 设置一个固定路径
+    timing_cache_path: null
+    
+    # [可选] DLA 核心 ID (Jetson 设备专用)
+    # 可选值: 0, 1, null (不使用 DLA)
+    dla_core: null
+    
+    # ---------- 动态形状配置 ----------
+    # ============================================================
+    # 💡 如需批量推理，推荐使用此配置而非 Stage 4 的 dynamic_batch
+    #    这种方式对 EfficientNet/MobileNet 等模型更稳定
+    # ============================================================
+    
+    # [可选] 动态 batch size
+    # 设置后可在推理时使用不同的 batch size
+    # 对于需要批量处理的场景，强烈推荐启用
+    dynamic_batch:
+      enabled: false      # 是否启用动态 batch
+      min: 1              # 最小 batch size
+      opt: 1              # 最优 batch size (TensorRT 优化目标)
+      max: 1              # 最大 batch size
+    
+    # [可选] 动态输入尺寸 (H, W)
+    # 设置后可在推理时使用不同的图像尺寸
+    # 注意: 分类任务通常不需要动态尺寸，保持 enabled: false
+    dynamic_shapes:
+      enabled: false      # 是否启用动态尺寸
+      min: [224, 224]     # 最小尺寸 [H, W]
+      opt: [224, 224]     # 最优尺寸 [H, W] (TensorRT 优化目标)
+      max: [224, 224]     # 最大尺寸 [H, W]
+  
+  # ---------- OpenVINO 专用配置 ----------
+  openvino:
+    # [可选] 推理设备
+    # 可选值: "CPU", "GPU", "AUTO"
+    device: "CPU"
+    
+    # [可选] 推理流数
+    # 用于多核并行推理
+    num_streams: null
+  
+  # ---------- ONNX Runtime 专用配置 ----------
+  ort:
+    # [可选] 跳过 ORT 预处理 (quant_pre_process)
+    # 对于复杂模型 (如 Wide ResNet)，预处理可能非常慢
+    # 如果预处理卡住，设为 true
+    skip_preprocess: false
+    
+    # [可选] 预处理超时时间 (秒)
+    # 超时后自动跳过预处理，使用原始模型
+    # 推荐: 120 (2分钟)
+    preprocess_timeout: 120
+
+# ============================================================================
+# Stage 8: 配置文件生成 (Config Generation)
+# ============================================================================
+stage8_config:
+  # [可选] 是否生成部署配置
+  # 生成 YAML 格式的推理配置文件
+  enabled: true
+  
+  # [可选] 配置文件输出路径
+  # 如果不设置，自动生成为 {model_name}_deploy.yaml
+  output_path: null
+
+# ============================================================================
+# 全局配置
+# ============================================================================
+global:
+  # [必填] 输出目录
+  # 所有生成的文件将保存到此目录
+  output_dir: "./output"
+  
+  # [可选] 详细日志
+  # 输出更多调试信息
+  verbose: false
+  
+  # [可选] 跳过的阶段
+  # 可以跳过某些阶段，例如已有 ONNX 可跳过 Stage 1-4
+  # 可选值: ["stage3"], ["stage2", "stage3"], 等
+  skip_stages: []
+
+# ============================================================================
+# 常见问题排查 (FAQ)
+# ============================================================================
+#
+# Q1: TensorRT 转换失败，提示 "Kernel weight dimension failed to broadcast"
+# A1: 这通常是 EfficientNet/MobileNet + 动态 batch 导致的
+#     解决方案:
+#     1. 设置 stage4_export.dynamic_batch: false
+#     2. 如需批量推理，启用 stage5_convert.tensorrt.dynamic_batch.enabled: true
+#
+# Q2: TensorRT 转换失败，提示 ONNX parse error
+# A2: 可能是 opset 版本兼容性问题
+#     解决方案: 尝试降低 stage4_export.opset_version 到 13 或 11
+#
+# Q3: INT8 量化后精度损失很大
+# A3: 某些模型（如 EfficientNet）对 INT8 量化敏感
+#     解决方案:
+#     1. 使用 precision: "mixed" 混合精度
+#     2. 或使用 precision: "fp16"
+#     3. 增加校准样本数量
+#
+# Q4: 转换速度很慢
+# A4: 可能原因:
+#     1. 校准样本过多 - 减少 calib_num_samples
+#     2. 工作空间过大 - 减小 tensorrt.workspace_gb
+#     3. 使用 timing_cache_path 缓存优化结果
+#

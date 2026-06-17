@@ -1,0 +1,51 @@
+{
+  "version": "2.0",
+  "task_type": "unknown",
+  "task_id": "unknown",
+  "saved_at": "2026-02-03T14:10:59.084541",
+  "params": {
+    "training": {
+      "batch_size": 32,
+      "epochs": 100
+    }
+  },
+  "history": {
+    "train_losses": [
+      0.5,
+      0.3,
+      0.5,
+      0.3,
+      0.5,
+      0.3
+    ],
+    "val_losses": [
+      0.6,
+      0.4,
+      0.6,
+      0.4,
+      0.6,
+      0.4
+    ],
+    "val_accs": [
+      85.0,
+      90.0,
+      85.0,
+      90.0,
+      85.0,
+      90.0
+    ],
+    "current_epoch": 2,
+    "best_acc": 90.0,
+    "best_epoch": 2
+  },
+  "logs": {
+    "training": [
+      "开始训练...",
+      "Epoch 1 完成",
+      "开始训练...",
+      "Epoch 1 完成",
+      "开始训练...",
+      "Epoch 1 完成"
+    ]
+  }
+}
